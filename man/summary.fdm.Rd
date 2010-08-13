@@ -22,7 +22,7 @@
 
 \examples{
 fit1 <- lca(fr.mort)
-fit2 <- bms(fr.mort)
+fit2 <- bms(fr.mort,breakmethod="bai")
 fit3 <- fdm(fr.mort)
 summary(fit1)
 summary(fit2)

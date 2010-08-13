@@ -30,11 +30,11 @@ or a list of arrays containing the future simulated values (in the case of a \co
 \examples{
 france.fit <- fdm(fr.mort,order=2)
 france.fcast <- forecast(france.fit,50,method="ets")
-france.sim <- simulate(france.fcast)
+france.sim <- simulate(france.fcast,nsim=100)
 
 fr.sm <- smooth.demogdata(fr.mort)
 france.fit2 <- coherentfdm(fr.sm)
 france.fcast2 <- forecast(france.fit2,50)
-france.sim2 <- simulate(france.fcast2)
+france.sim2 <- simulate(france.fcast2,nsim=100)
 }
 \keyword{models}

@@ -46,7 +46,7 @@ france.e0.f <- life.expectancy(france.fcast)
 
 france.fdm <- fdm(extract.years(fr.mort,years=1950:2006))
 france.fcast <- forecast(france.fdm)
-plot(e0(france.fcast,PI=TRUE,nsim=500))
+plot(e0(france.fcast,PI=TRUE,nsim=250))
 
 }
 \keyword{models}
