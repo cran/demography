@@ -1,3 +1,6 @@
+v1.03
+- improved documentation for hmd.mx()
+
 v1.02
 - changed some examples in the help file for bms() to enable the CRAN checks to run faster.
 

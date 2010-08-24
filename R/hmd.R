@@ -44,3 +44,4 @@ hmd.mx <- function(country, username, password, label=country)
         obj$age[m] <- 2 * obj$age[m - 1] - obj$age[m - 2]
     return(structure(obj, class = "demogdata"))
 }
+
