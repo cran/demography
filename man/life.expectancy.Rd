@@ -1,15 +1,16 @@
 \name{life.expectancy}
 \alias{life.expectancy}
 \alias{e0}
+\alias{flife.expectancy}
 \title{Estimate life expectancy from mortality rates}
 \usage{
 life.expectancy(data, series = names(data$rate)[1], years = data$year,
     type = c("period", "cohort"), age = min(data$age),
     max.age = min(100, max(data$age)))
-e0(data, series=NULL,  years = data$year, 
-    type = c("period", "cohort"), age = min(data$age), 
-    max.age = min(100, max(data$age)), 
-    PI=FALSE,  nsim=500, ...)
+flife.expectancy(data, series=NULL,  years = data$year, type = c("period", "cohort"), 
+    age = min(data$age), max.age = NULL, PI = FALSE, nsim = 500, ...)
+e0(data, series = NULL,  years = data$year, type = c("period", "cohort"), 
+	max.age = NULL, PI = FALSE, nsim = 500, ...)
 }
 
 \arguments{
@@ -18,7 +19,7 @@ or an object of class \code{fmforecast} such as the output from  \code{\link{for
 or an object of class \code{fmforecast2} such as the output from \code{\link{forecast.fdmpr}}.}
 \item{series}{Name of mortality series to use. Default is the first demogdata series in data.}
 \item{years}{Vector indicating which years to use.}
-\item{type}{Either \dQuote{period} or \dQuote{cohort}.}
+\item{type}{Either \code{period} or \code{cohort}.}
 \item{age}{Age at which life expectancy is to be calculated.}
 \item{max.age}{Maximum age for life table calculation.}
 \item{PI}{If TRUE, produce a prediction interval.}
@@ -26,10 +27,11 @@ or an object of class \code{fmforecast2} such as the output from \code{\link{for
 \item{...}{Other arguments passed to \code{simulate} when producing prediction intervals.}
 }
 
-\description{Both functions estimate life expectancy from \code{lifetable}. 
-The function \code{e0} is primarily designed for forecast life expectancies and will optionally 
+\description{All three functions estimate life expectancy from \code{lifetable}. 
+The function \code{flife.expectancy} is primarily designed for forecast life expectancies and will optionally 
 produce prediction intervals. Where appropriate, it will package the results as a forecast object
-which makes it much easier to product nice plots of forecast life expectancies.}
+which makes it much easier to product nice plots of forecast life expectancies.
+The \code{e0} function is a shorthand wrapper for \code{flife.expectancy} with \code{age=0}.}
 
 \value{Time series of life expectancies (one per year), or a forecast object of life expectancies (one per year).
 }
@@ -46,7 +48,10 @@ france.e0.f <- life.expectancy(france.fcast)
 
 france.fdm <- fdm(extract.years(fr.mort,years=1950:2006))
 france.fcast <- forecast(france.fdm)
-plot(e0(france.fcast,PI=TRUE,nsim=250))
+e0.fcast <- e0(france.fcast,PI=TRUE,nsim=200)
+plot(e0.fcast)
+
+life.expectancy(fr.mort,type='cohort',age=50)
 
 }
 \keyword{models}

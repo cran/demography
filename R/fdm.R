@@ -41,7 +41,7 @@ fdm <- function(data, series=names(data$rate)[1], order=6, ages=data$age, max.ag
         fitted=fit$fitted,
         residuals=fit$residuals,
         basis=fit$basis,coeff=fit$coeff,
-        mean.se=fit$mean.se,varprop=fit$varprop, weights=fit$weights,
+        mean.se=fit$mean.se,varprop=fit$varprop, weights=fit$wt,
         obs.var=ov,
         v=fit$v,type=data$type,
         y=data.fts,

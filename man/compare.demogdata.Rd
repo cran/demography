@@ -44,7 +44,7 @@ Note that the error matrices have different names indicating if the series forec
 \seealso{\link{forecast.fdm},\link{plot.errorfdm}}
 
 \examples{
-fr.test <- smooth.demogdata(extract.years(fr.mort,years=1921:1980))
+fr.test <- extract.years(fr.sm,years=1921:1980)
 fr.fit <- fdm(fr.test,order=2)
 fr.error <- compare.demogdata(fr.mort, forecast(fr.fit,20))
 plot(fr.error)

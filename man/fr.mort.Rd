@@ -1,5 +1,6 @@
 \name{fr.mort}
 \alias{fr.mort}
+\alias{fr.sm}
 
 \docType{data}
 
@@ -7,8 +8,8 @@
 
 \description{Age-specific mortality rates and population for France.}
 
-\details{French mortality rates and populations (1899-2005) for ages 0-110. Data taken from the Human Mortality Database
-on 20 February 2008.
+\details{\code{fr.mort} contains French mortality rates and populations (1899-2005) for ages 0-110. Data taken from the Human Mortality Database
+on 20 February 2008. \code{fr.sm} contains a smoothed version of \code{fr.mort} obtained using the \code{\link{smooth.demogdata}} function.
 }
 
 \format{Object of class \code{demogdata} containing the following components:
@@ -28,5 +29,8 @@ on 20 February 2008.
 
 \examples{
 plot(fr.mort,years=1950:1997)
+
+plot(fr.mort,years=1990,type='p',pch=1)
+lines(fr.sm,years=1990)
 }
 \keyword{data}

@@ -254,14 +254,15 @@ use.weight <- function(data,standardize=TRUE)
             w[[i]] <- pop*rate^(1-2*data$lambda)
         else
             stop("I shouldn't be here!")
-		if(mean(w[[i]],na.rm=TRUE) > 1)
-			stop("There's a problem. It looks like your rates are all too large.")
-		else if(mean(w[[i]],na.rm=TRUE) < 0)
+		#if(mean(w[[i]],na.rm=TRUE) > 1)
+		#	stop("There's a problem. It looks like your rates are all too large.")
+		#else 
+		if(mean(w[[i]],na.rm=TRUE) < 0)
 			stop("There's a problem. Do you have negative rates?")
-		w[[i]][w[[i]] > 1e9] <- NA
-        w[[i]][w[[i]] < 0] <- NA
-        w[[i]][rate < 1e-9] <- NA
-        w[[i]][BoxCox(rate,data$lambda) < - 1e9] <- 0
+		w[[i]][w[[i]] > 1e9] <- 0
+        w[[i]][w[[i]] < 0] <- 0
+        #w[[i]][rate < 1e-9] <- 0
+        #w[[i]][BoxCox(rate,data$lambda) < -1e9] <- 0
         if(data$type=="mortality")
             w[[i]][log(rate) > -1e-9] <- 0
         if(standardize)

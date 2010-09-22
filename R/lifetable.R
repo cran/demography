@@ -1,10 +1,8 @@
 # Lifetable functions
 # Produce lifetable from mortality rates
-# Replicate the Excel spreadsheet life table
-# This version only works with single ages.
 
 lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=data$age,
-    max.age=min(100,max(ages)), type=c("period","cohort"))
+	max.age=min(100,max(data$age)), type=c("period","cohort"))
 {
     if(!is.element("demogdata",class(data)))
         stop("data must be a demogdata object")
@@ -15,173 +13,118 @@ lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=da
         stop(paste("Series",series,"not found"))
     if(is.na(sum(match(years,data$year))))
         stop("Years not present in data")
-    if(max.age > max(ages))
-        stop("max.age too large")
-     
     sex <- series
     if(sex!="female" & sex!="male" & sex!="total")
     {
         if(is.element("model",names(data)))
             sex <- names(data$model)[4]
     }
+	agegroup <- data$age[2]-data$age[1]
 
-    data <- extract.ages(data,ages,combine.upper=FALSE)
-    if(max.age < max(ages))
-        data <- extract.ages(data,min(ages):max.age,combine.upper=TRUE)
-    if(type=="cohort")
-        ltab = clifetab(data=data,series=series,years=years,sex=sex)
-    else
-        ltab = lifetab(data=data,series=series,years=years,sex=sex)
+	if(type=="period")
+	{
+		max.age <- min(max.age,max(ages))
+		data <- extract.ages(data,ages,combine.upper=FALSE)
+		if(max.age < max(ages))
+			data <- extract.ages(data,min(ages):max.age,combine.upper=TRUE)
+		data <- extract.years(data,years=years)
+		mx <- get.series(data$rate,series)
+		n <- length(years)
+		p <- nrow(mx)
+		rownames(mx) <- ages <- data$age
+		colnames(mx) <- years
+		qx <- lx <- dx <- Lx <- Tx <- ex <- rx <- mx*NA
+		rownames(rx) <- ages--1
+		rownames(rx)[ages==0] <- "B"
+		for(i in 1:n)
+		{
+			ltable <- lt(mx[,i],min(ages),agegroup,sex)
+			nn <- length(ltable$qx)
+			qx[1:nn,i] <- ltable$qx
+			lx[1:nn,i] <- ltable$lx
+			dx[1:nn,i] <- ltable$dx
+			Lx[1:nn,i] <- ltable$Lx
+			Tx[1:nn,i] <- ltable$Tx
+			ex[1:nn,i] <- ltable$ex
+			rx[1:nn,i] <- ltable$rx
+		}
+	}
+	else if(type=="cohort" & length(ages)>1) # multiple ages, single year.
+	{
+		data <- extract.ages(data,min(ages):max.age,combine.upper=TRUE)
+		data <- extract.years(data,years=seq(min(years),max(data$year),by=1))
+		n <- length(data$year)
+		p <- length(data$age)
+		cmx <- matrix(NA,p,p)
+		rownames(cmx) <- data$age
+		colnames(cmx) <- paste(min(years)," age ",data$age,sep="")
+		qx <- dx <- Tx <- lx <- Lx <- ex <- cmx
+		cohort <- match(ages,data$age)
+		cohort <- cohort[!is.na(cohort)]
+		if(length(cohort)==0)
+			stop("No data available")
+		for(coh in cohort)
+		{
+			subdata <- extract.ages(data,data$age[coh]:min(max.age,data$age[coh]+n-1),combine.upper=TRUE)
+			mx <- get.series(subdata$rate,series)
+			p <- nrow(mx)
+			for (j in 1:p)
+				cmx[coh+j-1,coh] <- mx[j,j]
+			ltable <- lt(cmx[coh+(1:p)-1,coh], data$age[coh], agegroup, sex=sex)
+			p <- length(ltable$lx)
+			lx[coh+(1:p)-1,coh] <- ltable$lx
+			Lx[coh+(1:p)-1,coh] <- ltable$Lx
+			ex[coh+(1:p)-1,coh] <- ltable$ex
+			qx[coh+(1:p)-1,coh] <- ltable$qx
+			dx[coh+(1:p)-1,coh] <- ltable$dx
+			Tx[coh+(1:p)-1,coh] <- ltable$Tx
+		}
+		mx <- cmx
+		# Retain columns in required cohort
+		mx <- mx[,cohort,drop=FALSE]
+		lx <- lx[,cohort,drop=FALSE]
+		Lx <- Lx[,cohort,drop=FALSE]
+		ex <- ex[,cohort,drop=FALSE]
+		qx <- qx[,cohort,drop=FALSE]
+		dx <- dx[,cohort,drop=FALSE]
+		Tx <- Tx[,cohort,drop=FALSE]
+		rx <- NULL
+	}
+	else #single age, multiple years.
+	{
+		data <- extract.years(data,years=seq(min(years),max(data$year),by=1))
+		data <- extract.ages(data,ages:min(max.age,ages+length(data$year)-1),combine.upper=TRUE)
+		n <- length(data$year)
+		p <- length(data$age)
+		ny <- length(years)
+		cmx <- matrix(NA,p,ny)
+		rownames(cmx) <- data$age
+		colnames(cmx) <- paste(years," age ",ages,sep="")
+		qx <- dx <- Tx <- lx <- Lx <- ex <- cmx
+		for(i in 1:ny)
+		{
+			subdata <- extract.years(data,years=seq(years[i],max(data$year),by=1))
+			subdata <- extract.ages(subdata,ages:min(max.age,ages+length(subdata$year)-1),combine.upper=TRUE)
+			mx <- get.series(subdata$rate,series)
+			p <- nrow(mx)
+			for (j in 1:p)
+				cmx[j,i] <- mx[j,j]
+			ltable <- lt(cmx[,i],ages, agegroup, sex=sex)
+			p <- length(ltable$lx)
+			lx[1:p,i] <- ltable$lx
+			Lx[1:p,i] <- ltable$Lx
+			ex[1:p,i] <- ltable$ex
+			qx[1:p,i] <- ltable$qx
+			dx[1:p,i] <- ltable$dx
+			Tx[1:p,i] <- ltable$Tx
+		}
+		mx <- cmx
+		rx <- NULL
+	}
 
-    ltab$label <- data$label
-
-    idx <- match(ages,ltab$age)
-    p <- length(idx)
-    ltab$qx <- matrix(ltab$qx[idx,],nrow=p)
-    ltab$mx <- matrix(ltab$mx[idx,],nrow=p)
-    ltab$lx <- matrix(ltab$lx[idx,],nrow=p)
-    ltab$dx <- matrix(ltab$dx[idx,],nrow=p)
-    ltab$Lx <- matrix(ltab$Lx[idx,],nrow=p)
-    ltab$Tx <- matrix(ltab$Tx[idx,],nrow=p)
-    ltab$ex <- matrix(ltab$ex[idx,],nrow=p)
-
-    rownames(ltab$qx) <- rownames(ltab$lx) <- rownames(ltab$dx) <- rownames(ltab$Lx) <- rownames(ltab$Tx) <- rownames(ltab$ex) <- ages
-
-    if(type=="period")
-    {
-        ltab$rx <- matrix(ltab$rx[idx,],nrow=p)
-        rownames(ltab$rx) <- ages-1
-        rownames(ltab$rx)[ages==0] <- "B"
-        colnames(ltab$qx) <- colnames(ltab$lx) <- colnames(ltab$dx) <- colnames(ltab$Lx) <- colnames(ltab$Tx) <- colnames(ltab$ex) <- colnames(ltab$rx) <- years[1:ncol(ltab$ex)]
-    }
-    else
-    {
-        ncol <- ncol(ltab$qx)
-        colnames(ltab$qx) <- colnames(ltab$lx) <- colnames(ltab$dx) <- colnames(ltab$Lx) <- colnames(ltab$Tx) <- colnames(ltab$ex) <- paste("C",ages[1:ncol],sep="")
-    }
-    ltab$age = ages
-
-    return(structure(ltab,class="lifetable"))
+	return(structure(list(age=ages,year=years, mx=mx,qx=qx,lx=lx,dx=dx,Lx=Lx,Tx=Tx,ex=ex,rx=rx,
+        series=series, type=type, label=data$label),class="lifetable"))
 }
-
-
-lifetab <- function(data,series,years,sex)
-{
-    subdata <- extract.years(data,years=years)
-    mx <- get.series(subdata$rate,series)
-    n <- length(years)
-    p <- nrow(mx)
-    rownames(mx) = subdata$age
-    colnames(mx) = years
-    qx = lx = dx = Lx = Tx = ex = rx = mx*NA
-    rownames(rx) = subdata$age-1
-    rownames(rx)[subdata$age==0] <- "B"
-    startage = min(subdata$age)
-    agegroup = subdata$age[4]-subdata$age[3]
-    for(i in 1:n)
-    {
-        ltable <- lt(mx[,i],startage,agegroup,sex)
-        p <- nrow(ltable)
-        qx[1:p,i] = ltable$qx
-        lx[1:p,i] = ltable$lx
-        dx[1:p,i] = ltable$dx
-        Lx[1:p,i] = ltable$Lx
-        Tx[1:p,i] = ltable$Tx
-        ex[1:p,i] = ltable$ex
-        rx[1:p,i] = ltable$rx
-    }
-    
-#    colnames(qx) <- colnames(lx) <- colnames(dx) <- colnames(Lx) <- colnames(Tx) <- colnames(ex) <- years
-#    rownames(qx) <- rownames(lx) <- rownames(dx) <- rownames(Lx) <- rownames(Tx) <- rownames(ex) <- subdata$age
-    return(list(age=subdata$age,year=years, mx=as.matrix(mx), qx=as.matrix(qx),
-        lx=as.matrix(lx),dx=as.matrix(dx),Lx=as.matrix(Lx),Tx=as.matrix(Tx),ex=as.matrix(ex),rx=as.matrix(rx),
-        series=series, type="period"))
-}
-
-
-# Cohort lifetable
-#  Note number of years must be greater than number of ages
-clifetab <- function(data,series,years,sex)
-{
-    idx <- match(years,data$year)
-    idx <- idx[!is.na(idx)]
-    if(length(idx)==0)
-        stop("Year not available")
-    years <- data$year[idx]
-    mx <- get.series(data$rate,series)
-    n <- ncol(mx)
-    p <- xmx <- nrow(mx)
-    if(n <= p)
-    {
-        p = n-1
-        if(p<1)
-            stop("Insufficient years")
-        xmx <- nrow(mx)
-#        mx <- as.matrix(mx[(1:p)+(xmx-p),]) # Is this right?
-        mx <- as.matrix(mx[1:p,]) # Old method
-    }
-    idx <- idx[idx <= p]
-    if(length(idx)==0)
-        stop("Insufficient years")
-    qx = dx = Tx = lx = Lx = ex = matrix(NA,p,p)
-    ages <- data$age[(1:p)+(xmx-p)]
-    rownames(lx) = rownames(Lx) = rownames(ex) = ages #is this right?
-    colnames(lx) = colnames(Lx) = colnames(ex) = ages
-    startage = min(ages)
-    agegroup = ages[4]-ages[3]
-    for (coh in 1:p)
-    {
-        cmx <- rep(0,p-coh+1)
-        for (a in 1:(p-coh+1))
-            cmx[a] <- mx[a+coh-1,a]
-        ltable = lt(cmx, startage+coh-1,agegroup, sex=sex)
-        lx[coh:p,coh] = ltable$lx[1:(p-coh+1)]
-        Lx[coh:p,coh] = ltable$Lx[1:(p-coh+1)]
-        ex[coh:p,coh] = ltable$ex[1:(p-coh+1)]
-        qx[coh:p,coh] = ltable$qx[1:(p-coh+1)]
-        dx[coh:p,coh] = ltable$dx[1:(p-coh+1)]
-        Tx[coh:p,coh] = ltable$Tx[1:(p-coh+1)]
-    }
-
-    return(list(age=ages,year=years,mx=as.matrix(mx[,idx]),
-        qx=as.matrix(qx[,idx]),lx=as.matrix(lx[,idx]),dx=as.matrix(dx[,idx]),
-            Lx=as.matrix(Lx[,idx]),Tx=as.matrix(Tx[,idx]),ex=as.matrix(ex[,idx]),series=series,
-        type="cohort"))
-}
-
-# Derive lifetable values from single year mortality rates
-# mx is a vector consisting of one column from a mortality matrix
-
-#oldlt <- function(mx,startage=0)
-#{
-#    # Omit missing ages
-#    firstmiss <- (1:length(mx))[is.na(mx)][1]
-#    if(!is.na(firstmiss))
-#        mx <- mx[1:(firstmiss-1)]
-#    nn <- length(mx)
-#    if(startage==0)
-#        a0 <- 0.07 + (1.7*mx[1]) # per Keyfitz
-#    else
-#        a0 <- 0.5
-#    ax <- c(a0, rep(0.5, nn-1))
-#    qx <- mx/(1 + ((1-ax) * mx)) ##Chiang
-#    qx[nn]=1
-#    qx[qx > 1] <- 1
-#    lx <- c(1,cumprod(1-qx[1:(nn-1)]))
-#    dx <- -diff(c(lx,0))
-#    Lx <- lx - dx  + dx*ax
-#    Lx[nn] <- lx[nn]/mx[nn]
-#    Tx <- rep(0,nn)
-#    Tx[nn] <- Lx[nn]
-#    Tx <- rev(cumsum(rev(Lx)))
-#    ex <- Tx/lx
-#    rx <- c(Lx[1]/lx[1],Lx[2:(nn-1)]/Lx[1:(nn-2)],Tx[nn]/Tx[nn-1])
-#    
-#    result <- data.frame(mx = mx, qx = qx, lx = lx, dx = dx,
-#                Lx = Lx, Tx = Tx, ex = ex, rx=rx)
-#    return(result)
-#}
-#
 
 lt <- function (mx, startage=0, agegroup=5, sex)
 {
@@ -192,6 +135,8 @@ lt <- function (mx, startage=0, agegroup=5, sex)
     if (!is.na(firstmiss)) 
         mx <- mx[1:(firstmiss - 1)]
     nn <- length(mx)
+	if(nn < 1)
+		stop("Not enough data to proceed")
 
     # Compute width of each age group
     if(agegroup == 1)
@@ -228,9 +173,14 @@ lt <- function (mx, startage=0, agegroup=5, sex)
     }
     else if (startage > 0) 
         a0 <- 0.5
-    if (agegroup == 1) 
-        ax <- c(a0, rep(0.5, nn - 2),Inf) ## last ax not used 
-    else if(agegroup == 5) 
+    if (agegroup == 1)
+	{
+		if(nn>1)
+			ax <- c(a0, rep(0.5, nn-2),Inf) ## last ax not used 
+		else
+			ax <- Inf
+	}
+	else if(agegroup == 5) 
     {
         if (sex == "female") 
         {
@@ -260,7 +210,7 @@ lt <- function (mx, startage=0, agegroup=5, sex)
         a0  <- 2.6
         if (agegroup == 5) 
         {
-            ax <- c(a0,rep(2.6, nn-2),Inf)
+			ax <- c(a0,rep(2.6, nn-2),Inf)
             nx <- c(rep(5,nn))  
         }    ## last ax not used      
     }        
@@ -271,23 +221,30 @@ lt <- function (mx, startage=0, agegroup=5, sex)
     
     if (max(age) >= 75)
     {
-        idx <- age>=75
+        idx <- (age>=75)
         ax[idx] <- (1/mx + nx - nx/(1-exp(-nx*mx)))[idx]
         qx[idx] <- 1 - exp(-nx * mx)[idx]
     }
     
-    
     qx[qx > 1] <- 1  # this problem  avoided by recalc at 75+ ...should not be needed
     qx[nn] <- 1 
-    lx <- c(1, cumprod(1 - qx[1:(nn - 1)]))
-    dx <- -diff(c(lx, 0))
-    Lx <- nx * lx - dx * (nx - ax)   # nx used here
+	if(nn>1)
+	{
+		lx <- c(1, cumprod(1 - qx[1:(nn-1)]))
+		dx <- -diff(c(lx, 0))
+	}
+	else
+		lx <- dx <- 1
+    Lx <- nx * lx - dx * (nx - ax)
     Lx[nn] <- lx[nn]/mx[nn]
-    Tx <- rep(0, nn)
-    Tx[nn] <- Lx[nn]
     Tx <- rev(cumsum(rev(Lx)))
     ex <- Tx/lx
-    rx <- c(Lx[1]/lx[1], Lx[2:(nn-1)]/Lx[1:(nn-2)], Tx[nn]/Tx[nn-1])
+	if(nn>2)
+		rx <- c(Lx[1]/lx[1], Lx[2:(nn-1)]/Lx[1:(nn-2)], Tx[nn]/Tx[nn-1])
+	else if(nn==2)
+		rx <- c(Lx[1]/lx[1],Tx[nn]/Tx[nn-1])
+	else
+		rx <- c(Lx[1]/lx[1])
     if( agegroup == 5) 
         rx <- c(0, (Lx[1]+Lx[2])/5*lx[1], Lx[3]/(Lx[1]+Lx[2]), 
             Lx[4:(nn-1)]/Lx[3:(nn-2)], Tx[nn]/Tx[nn-1]) # note rx[1]= 0 (not used) to maintain length = nn 
@@ -296,35 +253,10 @@ lt <- function (mx, startage=0, agegroup=5, sex)
     return(result)
 }
 
-
-# Compute expected age from single year mortality rates
-get.e0 <- function(x,agegroup,sex)
-{
-    lt(x, 0, agegroup, sex)$ex[1]
-}
-
-# Compute expected ages for multiple years from period lifetable
-life.expectancy <- function(data,series=names(data$rate)[1],years=data$year,
-    type=c("period","cohort"), age=min(data$age), max.age=min(100,max(data$age)))
-{
-    type <- match.arg(type)
-    if(!is.el(series,names(data$rate)))
-        stop(paste("Series",series,"not found"))
-    if(age > max.age | age > max(data$age))
-        stop("age is greater than maximum age")
-    else if(age < min(data$age))
-        stop("age is less than minimum age")
-        
-    data.lt <- lifetable(data,series,years,type=type,max.age=max.age)$ex
-    idx <- match(age,rownames(data.lt))
-    if(sum(is.na(data.lt[idx,]))>0 | max(data.lt[idx,]) > 1e9)
-        warning("Some missing or infinite values in the life table calculation.\n  These can probably be avoided by setting max.age to a lower value.")
-
-    return(ts(data.lt[idx,],s=years[1],f=1))
-}
-
 plot.lifetable <- function(x,years=x$year,main,xlab="Age",ylab="Expected number of years left",...)
 {
+	if(x$type != "period")
+		stop("Currently only period lifetables can be plotted.")
     # Extract years
     idx <- match(years,x$year)
     idx <- idx[!is.na(idx)]
@@ -348,6 +280,8 @@ plot.lifetable <- function(x,years=x$year,main,xlab="Age",ylab="Expected number 
 
 lines.lifetable <- function(x,years=x$year,...)
 {
+	if(x$type != "period")
+		stop("Currently only period lifetables can be plotted.")
     # Extract years
     idx <- match(years,x$year)
     idx <- idx[!is.na(idx)]
@@ -360,63 +294,190 @@ lines.lifetable <- function(x,years=x$year,...)
     lines(fts(x$age,x$ex[,idx],s=x$year[1],f=1),...)
 }
 
-print.lifetable <- function(x,years=x$year,ages=x$age,digits=4,...)
+print.lifetable <- function(x,digits=4,...)
 {
-    # Extract years
-    idx <- match(years,x$year)
-    idx <- idx[!is.na(idx)]
-    idx <- idx[idx <= ncol(x$ex)]
-    if(length(idx)==0)
-        stop("Year not available")
-    years <- x$year[idx]
-    ny <- length(years)
+	ny <- ncol(x$ex)
     outlist <- vector(length=ny,mode="list")
-
-    # Extract ages
-    idx3 <- match(ages,x$age)
-    idx3 <- idx3[!is.na(idx)]
-    if(length(idx3)==0)
-        stop("Age not available")
-    ages <- x$age[idx3]
-    cohort <- colnames(x$ex)
-
-    # Construct output
     for(i in 1:ny)
     {
-        j <- idx[i]
-        idx2 <- !is.na(x$ex[,j])
-        idx2 <- idx2
+        idx2 <- !is.na(x$mx[,i])
         if(sum(idx2)>0)
         {
-            outlist[[i]] <- data.frame(x$mx[,j],x$qx[,j],x$lx[,j],x$dx[,j],x$Lx[,j],x$Tx[,j],x$ex[,j])[idx2,]
+            outlist[[i]] <- data.frame(x$mx[,i],x$qx[,i],x$lx[,i],x$dx[,i],x$Lx[,i],x$Tx[,i],x$ex[,i])[idx2,]
             rownames(outlist[[i]]) <- rownames(x$ex)[idx2]
             colnames(outlist[[i]]) <- c("mx","qx","lx","dx","Lx","Tx","ex")
-            idx4 <- match(ages,rownames(outlist[[i]]))
-            idx4 <- idx4[!is.na(idx4)]
-            if(length(idx4)==0)
-                stop("Insufficient data")
-            outlist[[i]] <- outlist[[i]][idx4,]
         }
     }
-    names(outlist) = years
-    if(x$type=="period")
-        cat("Period ")
-    else if(x$type=="cohort")
-        cat("Cohort ")
+	if(x$type=="period")
+	{
+		names(outlist) = x$year
+		cat("Period ")
+	}
     else
-        stop("Unknown lifetable type")
+	{
+		names(outlist) <- colnames(x$ex)
+        cat("Cohort ")
+	}
     cat(paste("lifetable for",x$label,":",x$series,"\n\n"))
     for(i in 1:ny)
     {
         if(!is.null(outlist[[i]]))
         {
             if(x$type=="period")
-                cat(paste("Year:",years[i],"\n"))
+                cat(paste("Year:",names(outlist)[i],"\n"))
             else
-                cat(paste("Cohort:",cohort[i],"\n"))
+                cat(paste("Cohort:",names(outlist)[i],"\n"))
             print(round(outlist[[i]],digits=digits))
             cat("\n")
         }
     }
     invisible(outlist)
+}
+
+
+
+# Compute expected age from single year mortality rates
+get.e0 <- function(x,agegroup,sex)
+{
+    lt(x, 0, agegroup, sex)$ex[1]
+}
+
+# Compute expected ages for multiple years
+life.expectancy <- function(data,series=names(data$rate)[1],years=data$year,
+    type=c("period","cohort"), age=min(data$age), max.age=min(100,max(data$age)))
+{
+    type <- match.arg(type)
+    if(!is.el(series,names(data$rate)))
+        stop(paste("Series",series,"not found"))
+    if(age > max.age | age > max(data$age))
+        stop("age is greater than maximum age")
+    else if(age < min(data$age))
+        stop("age is less than minimum age")
+    if(type=="period")
+		data.lt <- lifetable(data,series,years,type=type,max.age=max.age)$ex
+	else
+		data.lt <- lifetable(data,series,years,type=type,ages=age,max.age=max.age)$ex
+    idx <- match(age,rownames(data.lt))
+    #if(sum(is.na(data.lt[idx,]))>0 | max(data.lt[idx,]) > 1e9)
+    #    warning("Some missing or infinite values in the life table calculation.\n  These can probably be avoided by setting max.age to a lower value.")
+
+    return(ts(data.lt[idx,],s=years[1],f=1))
+}
+
+
+flife.expectancy <- function(data, series=NULL, years=data$year,
+    type=c("period","cohort"), age=min(data$age), max.age=NULL,
+	PI=FALSE, nsim=500, ...)
+{
+    if(is.element("fmforecast",class(data)))
+    {
+		if(data$type != "mortality")
+			stop("data not a mortality object")
+        hdata <- list(year=data$model$year,age=data$model$age,
+            type=data$type,label=data$model$label,lambda=data$lambda)
+		if(min(data$model[[4]],na.rm=TRUE) > 0)
+			hdata$rate <- list(data$model[[4]])
+		else
+		    hdata$rate <- list(InvBoxCox(data$model[[4]],data$lambda))
+        names(hdata$rate) <- names(data$model)[4]
+		if(!is.null(data$model$pop))
+		{
+		    hdata$pop = list(data$model$pop)
+			names(hdata$pop) <- names(hdata$rate)
+		}
+        class(hdata) <- "demogdata"
+        # Fix missing values. Why are they there?
+        hdata$rate[[1]][is.na(hdata$rate[[1]])] <- 1-1e-5
+		if(is.null(max.age))
+			max.age <- min(100,max(data$age))
+        out <- structure(list(x=life.expectancy(hdata,type=type,age=age,max.age=max.age),
+		    mean=life.expectancy(data,years=years,type=type,age=age,max.age=max.age),
+            method="FDM model"),class="forecast")
+		if(is.element("lca",class(data$model)))
+			out$method = "LC model"
+		else if(!is.null(data$product))
+			out$method = "Coherent FDM model"
+		if(PI) # Compute prediction intervals
+		{
+			e0calc <- (!is.element("product",names(data$rate)) & !is.element("ratio",names(data$rate)))
+			if(is.null(data$product) & is.null(data$var) & is.null(data$kt.f))
+				warning("Incomplete information. Possibly this is from a coherent\n  model and you need to pass the entire object.")
+			else
+			{
+				sim <- simulate(data,nsim,...)
+				if(e0calc)
+				{
+					e0sim <- matrix(NA,dim(sim)[2],dim(sim)[3])
+					simdata <- data
+					for(i in 1:dim(sim)[3])
+					{
+						simdata$rate[[1]] <- as.matrix(sim[,,i])
+						e0sim[,i] <- life.expectancy(simdata,type=type,age=age,max.age=max.age)
+					}
+					if(is.element("lca",class(data$model)))
+						out$level <- data$kt.f$level
+					else
+						out$level <- data$coeff[[1]]$level
+					out$lower <- ts(apply(e0sim,1,quantile,prob=0.5 - out$level/200))
+					out$upper <- ts(apply(e0sim,1,quantile,prob=0.5 + out$level/200))
+					tsp(out$lower) <- tsp(out$upper) <- tsp(out$mean)
+				}
+				out$sim <- sim
+			}
+		}
+		return(out)
+    }
+	else if(is.element("fmforecast2",class(data)))
+	{
+		if(data[[1]]$type != "mortality")
+			stop("data not a mortality object")
+		if(is.null(series))
+			series <- names(data)[1]
+		if(is.null(max.age))
+			max.age <- min(100,max(data[[series]]$age))
+		if(is.element("product",names(data))) # Assume coherent model
+		{
+			out <- flife.expectancy(data[[series]],PI=FALSE,age=age,max.age=max.age,type=type)
+			if(max.age < 0)
+				max.age <- min(100,max(data[[series]]$age))
+			if(PI)
+			{
+				prodsim <- flife.expectancy(data$product,nsim=nsim,PI=PI,age=age,max.age=max.age,type=type)
+				ratiosim <- flife.expectancy(data$ratio[[series]],nsim=nsim,PI=PI,age=age,max.age=max.age,type=type)
+				sim <- prodsim$sim * ratiosim$sim
+				e0sim <- matrix(NA,dim(sim)[2],dim(sim)[3])
+				simdata <- data[[series]]
+				for(i in 1:dim(sim)[3])
+				{
+					simdata$rate[[1]] <- as.matrix(sim[,,i])
+					e0sim[,i] <- life.expectancy(simdata,type=type,age=age,max.age=max.age)
+				}
+				out$level <- data$product$coeff[[1]]$level
+				out$lower <- ts(apply(e0sim,1,quantile,prob=0.5 - out$level/200))
+				out$upper <- ts(apply(e0sim,1,quantile,prob=0.5 + out$level/200))
+				tsp(out$lower) <- tsp(out$upper) <- tsp(out$mean)
+			}
+		}
+		else
+			out <- flife.expectancy(data[[series]],PI=PI,nsim=nsim,max.age=max.age,type=type,age=age)
+		return(out)
+	}		
+    else
+	{
+	    if(!is.element("demogdata",class(data)))
+			stop("data must be a demogdata object")
+		if(data$type != "mortality")
+			stop("data must be a mortality object")
+		if(is.null(series))
+			series <- names(data$rate)[1]
+        return(life.expectancy(data,series=series,years=years,type=type,age=age,max.age=max.age))
+	}
+}
+
+e0 <- function(data, series=NULL, years=data$year,
+    type=c("period","cohort"), max.age=NULL,
+	PI=FALSE, nsim=500, ...)
+{
+	flife.expectancy(data, series=series, years=years,age=0,
+		type=type, max.age=max.age,PI=PI,nsim=nsim,...)
 }

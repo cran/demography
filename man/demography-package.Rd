@@ -8,9 +8,9 @@
 }
 
 \author{
-Rob J Hyndman, Heather Booth, Leonie Tickle, John Maindonald
+Rob J Hyndman with contributions from Heather Booth, Leonie Tickle, John Maindonald
 
-Maintainer: <Rob.Hyndman@buseco.monash.edu.au>
+Maintainer: <Rob.Hyndman@monash.edu>
 }
 
 \keyword{ package }

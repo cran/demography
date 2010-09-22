@@ -1,27 +1,35 @@
 \name{lifetable}
 \alias{lifetable}
-\title{Construct lifetable from mortality rates}
+\title{Construct lifetables from mortality rates}
 \usage{
 lifetable(data, series = names(data$rate)[1], years = data$year,
-                 ages = data$age, max.age = min(100, max(ages)),
-                 type = c("period", "cohort"))
+                ages = data$age, max.age = min(100, max(data$age)),
+                type = c("period", "cohort"))
 }
 
 \arguments{
 \item{data}{Demogdata object such as obtained from \code{\link{read.demogdata}}, \code{\link{forecast.fdm}} or \code{\link{forecast.lca}}.
 }
 \item{series}{Name of series to use.  Default is the first series in data\$rate.}
-\item{years}{Vector indicating which years to include in table. Default is all years available.}
-\item{ages}{Vector indicating which ages to include in table. Default is all ages available.}
+\item{years}{Vector indicating which years to include in the tables.}
+\item{ages}{Vector indicating which ages to include in table.}
 \item{max.age}{Age for last row. Ages beyond this are combined.}
-\item{type}{Type of lifetable: \dQuote{period} or \dQuote{cohort}.}
+\item{type}{Type of lifetable: \code{period} or \code{cohort}.}
 }
 
-\description{Creates lifetable replicating the excel spreadsheet life table. a0 is set to be
-\eqn{0.07 + (1.7*m0)}{0.07+1.7m_0} as per Keyfitz.   \eqn{qx = mx/(1 + ((1-ax) *
-mx))}{q_x = m_x/(1+[(1-a_x)m_x])} as per Chiang (1984).
+\description{Computes period and cohort lifetables from mortality rates for multiple years.}
 
-\code{lifetable} constructs a lifetable for multiple years.
+\details{For period lifetables, all years and all ages specified are included in the tables. For cohort lifetables, 
+if \code{ages} takes a scalar value, then the cohorts are taken to be of that age in each year contained in \code{years}. 
+But if \code{ages} is a vector of values, then the cohorts are taken to be of those ages in the first year contained in \code{years}.
+
+For example, if \code{ages=0} then lifetables of the birth cohorts for all years in \code{years} are computed. On the other hand, 
+if \code{ages=0:100} and \code{years=1950:2010}, then lifetables of each age cohort in 1950 are computed.
+
+In all cases, \eqn{q_x = m_x/(1+[(1-a_x)m_x])}{qx = mx/(1 + ((1-ax) * mx))} as per Chiang (1984).
+
+Warning: the code has only been tested for data based on single-year age groups.
+
 }
 
 \value{Object of class \dQuote{lifetable} containing the following components:
@@ -36,16 +44,19 @@ mx))}{q_x = m_x/(1+[(1-a_x)m_x])} as per Chiang (1984).
 \item{Lx}{Number of years lived between exact age x and exact age x+1.}
 \item{Tx}{Number of years lived after exact age x.}
 \item{ex}{Remaining life expectancy at exact age x.}
+Note that the lifetables themselves are not returned, only their components. However, there is a print method that constructs (and returns)
+the lifetables from the above components.
 }
 
 \seealso{\code{\link{life.expectancy}}}
 
 \author{Heather Booth, Leonie Tickle, Rob J Hyndman, John Maindonald and Timothy Miller}
 
-\references{Chiang CL. (1984) \emph{The life table and its applications}.
-    Robert E Krieger Publishing Company: Malabar.
+\references{Chiang CL. (1984) \emph{The life table and its applications}. Robert E Krieger Publishing Company: Malabar.
 
     Keyfitz, N, and Caswell, H. (2005) \emph{Applied mathematical demography}, Springer-Verlag: New York.
+
+    Preston, S.H., Heuveline, P., and Guillot, M. (2001) \emph{Demography: measuring and modeling population processes}. Blackwell
 }
 
 
@@ -53,10 +64,18 @@ mx))}{q_x = m_x/(1+[(1-a_x)m_x])} as per Chiang (1984).
 \examples{
 france.lt <- lifetable(fr.mort)
 plot(france.lt)
+lt1990 <- print(lifetable(fr.mort,year=1990))
 
 france.LC <- lca(fr.mort)
 france.fcast <- forecast(france.LC)
 france.lt.f <- lifetable(france.fcast)
-plot(france.lt.f,years=2010)
+plot(france.lt.f)
+
+# Birth cohort lifetables, 1900-1910
+france.clt <- lifetable(fr.mort,type="cohort",age=0, years=1900:1910)
+
+# Partial cohort lifetables for 1950
+lifetable(fr.mort,type="cohort",years=1950)
+
 }
 \keyword{models}

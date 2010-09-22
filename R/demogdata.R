@@ -320,9 +320,15 @@ extract.years <- function(data,years)
 
 extract.ages <- function(data,ages,combine.upper=TRUE)
 {
+	no.pop <- is.null(data$pop)
+    no.rate <- is.null(data$rate)
     if(combine.upper)
-        data <- set.upperage(data,max(ages))
-
+	{
+		if(no.pop)
+			warning("No population data available for combining upper ages")
+		else
+			data <- set.upperage(data,max(ages))
+	}
     idx <- match(ages,data$age)
     idx <- idx[!is.na(idx)]
     no.pop <- is.null(data$pop)
@@ -400,16 +406,24 @@ set.upperage <- function(data,max.age=100)
     else
     {
         idx <- data$age >= max.age
-        age <- data$age[!idx]
-        rnames <- rownames(data$pop)[!idx]
-        if(max(age) < max.age)
-        {
-            age <- c(age,max.age)
-            rnames <- c(rnames,NA)
-        }
-        rnames[length(rnames)] <- paste(max.age,"+",sep="")
+		if(sum(!idx) > 0)
+		{
+			age <- data$age[!idx]
+			rnames <- rownames(data$pop)[!idx]
+			if(max(age) < max.age)
+			{
+				age <- c(age,max.age)
+				rnames <- c(rnames,NA)
+			}
+		}
+		else
+		{
+			age <- max.age
+			rnames <- ""
+		}
+		rnames[length(rnames)] <- paste(max.age,"+",sep="")
         upper.pop <- data$pop[idx,]
-        pop = apply(matrix(upper.pop,nrow=sum(idx)),2,sum,na.rm=TRUE)
+        pop <- apply(matrix(upper.pop,nrow=sum(idx)),2,sum,na.rm=TRUE)
         data$pop <- rbind(matrix(data$pop[!idx,],ncol=ncol(data$pop)),pop)
         rownames(data$pop) <- rnames
         colnames(data$pop) <- data$year
@@ -525,105 +539,6 @@ median.demogdata <- function(x,series=names(x$rate)[1],
     loc <- L1median(t(mx),method=method)
     return(list(x=x$age,y=loc))
 }
-
-e0 <- function(data, series=NULL, years=data$year,
-    type=c("period","cohort"), age=min(data$age), max.age=min(100,max(data$age)),
-	PI=FALSE, nsim=500, ...)
-{
-    if(is.element("fmforecast",class(data)))
-    {
-		if(data$type != "mortality")
-			stop("data not a mortality object")
-        hdata <- list(year=data$model$year,age=data$model$age,
-            type=data$type,label=data$model$label,lambda=data$lambda)
-		if(min(data$model[[4]],na.rm=TRUE) > 0)
-			hdata$rate <- list(data$model[[4]])
-		else
-		    hdata$rate <- list(InvBoxCox(data$model[[4]],data$lambda))
-        names(hdata$rate) <- names(data$model)[4]
-		if(!is.null(data$model$pop))
-		{
-		    hdata$pop = list(data$model$pop)
-			names(hdata$pop) <- names(hdata$rate)
-		}
-        class(hdata) <- "demogdata"
-        # Fix missing values. Why are they there?
-        hdata$rate[[1]][is.na(hdata$rate[[1]])] <- 1-1e-5
-        out <- structure(list(x=life.expectancy(hdata),
-		    mean=life.expectancy(data,years=years,type=type,age=age,max.age=max.age),
-            method="FDM model"),class="forecast")
-		if(is.element("lca",class(data$model)))
-			out$method = "LC model"
-		else if(!is.null(data$product))
-			out$method = "Coherent FDM model"
-		if(PI) # Compute prediction intervals
-		{
-			if(is.null(data$product) & is.null(data$var) & is.null(data$kt.f))
-				warning("Incomplete information. Possibly this is from a coherent\n  model and you need to pass the entire object.")
-			else
-			{
-				sim <- simulate(data,nsim,...)
-				e0sim <- matrix(NA,dim(sim)[2],dim(sim)[3])
-				simdata <- data
-				for(i in 1:dim(sim)[3])
-				{
-					simdata$rate[[1]] <- as.matrix(sim[,,i])
-					e0sim[,i] <- life.expectancy(simdata)
-				}
-				if(is.element("lca",class(data$model)))
-					out$level <- data$kt.f$level
-				else
-					out$level <- data$coeff[[1]]$level
-				out$lower <- apply(e0sim,1,quantile,prob=0.5 - out$level/200)
-				out$upper <- apply(e0sim,1,quantile,prob=0.5 + out$level/200)
-				out$sim <- sim
-			}
-		}
-		return(out)
-    }
-	else if(is.element("fmforecast2",class(data)))
-	{
-		if(data[[1]]$type != "mortality")
-			stop("data not a mortality object")
-		if(is.null(series))
-			series <- names(data)[1]
-		if(is.element("product",names(data))) # Assume coherent model
-		{
-			out <- e0(data[[series]],PI=FALSE)
-			if(PI)
-			{
-				prodsim <- e0(data$product,nsim=nsim,PI=PI)
-				ratiosim <- e0(data$ratio[[series]],nsim=nsim,PI=PI)
-				#browser()
-				sim <- prodsim$sim * ratiosim$sim
-				e0sim <- matrix(NA,dim(sim)[2],dim(sim)[3])
-				simdata <- data[[series]]
-				for(i in 1:dim(sim)[3])
-				{
-					simdata$rate[[1]] <- as.matrix(sim[,,i])
-					e0sim[,i] <- life.expectancy(simdata)
-				}
-				out$level <- data$product$coeff[[1]]$level
-				out$lower <- apply(e0sim,1,quantile,prob=0.5 - out$level/200)
-				out$upper <- apply(e0sim,1,quantile,prob=0.5 + out$level/200)
-			}
-		}
-		else
-			out <- e0(data[[series]],PI=PI,nsim=nsim)
-		return(out)
-	}		
-    else
-	{
-	    if(!is.element("demogdata",class(data)))
-			stop("data must be a demogdata object")
-		if(data$type != "mortality")
-			stop("data must be a mortality object")
-		if(is.null(series))
-			series <- names(data$rate)[1]
-        return(life.expectancy(data,series=series,years=years,type=type,age=age,max.age=max.age))
-	}
-}
-
 
 
 # Sex ratios

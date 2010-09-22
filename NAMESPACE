@@ -4,7 +4,7 @@ fitted.fdm, fitted.lca, forecast.fdm, forecast.lca, forecast.fdmpr,
 isfe, isfe.demogdata, lca, hmd.mx,
 life.expectancy, lifetable, mean.demogdata, 
 median.demogdata, netmigration, plot.demogdata, plot.errorfdm, 
-plot.lifetable, read.demogdata,
+plot.lifetable, read.demogdata,flife.expectancy,
 residuals.fdm, residuals.lca, set.upperage,
 smooth.demogdata, tfr, simulate.fmforecast, simulate.fmforecast2, pop.sim, e0, sex.ratio,models,
 models.fmforecast,models.fmforecast2)

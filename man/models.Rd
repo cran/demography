@@ -25,12 +25,12 @@
 \seealso{\code{\link{forecast.fdm}}, \code{\link{forecast.fdmpr}}.}
 
 \examples{
-fr.sm <- smooth.demogdata(extract.years(fr.mort,1950:2006))
-fr.fit <- fdm(fr.sm,series="male")
+fr.short <- extract.years(fr.sm,1950:2006)
+fr.fit <- fdm(fr.short,series="male")
 fr.fcast <- forecast(fr.fit)
 models(fr.fcast)
 
-fr.fit <- coherentfdm(fr.sm)
+fr.fit <- coherentfdm(fr.short)
 fr.fcast <- forecast(fr.fit)
 models(fr.fcast,select=1:3)
 }

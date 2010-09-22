@@ -11,7 +11,7 @@
 \item{series}{name of series within data holding rates (1x1)}
 \item{order}{Number of basis functions to fit.}
 \item{ages}{Ages to include in fit.}
-\item{max.age}{Maximum age to fit.}
+\item{max.age}{Maximum age to fit. Ages beyond this are collapsed into the upper age group.}
 \item{method}{Method to use for principal components decomposition.
 Possibilities are \dQuote{M}, \dQuote{rapca} and \dQuote{classical}. See \code{\link[ftsa]{ftsm}} for details.}
 \item{lambda}{Tuning parameter for robustness when \code{method="M"}.}

@@ -24,8 +24,8 @@ each of the ratio models.}
 \seealso{\code{\link{coherentfdm}}, \code{\link{forecast.fdm}}.}
 
 \examples{
-fr.sm <- smooth.demogdata(extract.years(fr.mort,1950:2006))
-fr.fit <- coherentfdm(fr.sm)
+fr.short <- extract.years(fr.sm,1950:2006)
+fr.fit <- coherentfdm(fr.short)
 fr.fcast <- forecast(fr.fit)
 plot(fr.fcast$male)
 plot(fr.fcast$ratio$male, plot.type='component', components=3)

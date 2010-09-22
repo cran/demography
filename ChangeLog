@@ -1,3 +1,9 @@
+v1.04
+- Fixed bugs in the use of weights in fdm() and smooth.demogdata()
+- Lifetable functions rewritten to remove bugs and add additional functionality for cohort lifetables.
+- Improved speed of PI calculations in e0
+- Added flife.expectancy().
+
 v1.03
 - improved documentation for hmd.mx()
 

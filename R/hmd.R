@@ -9,7 +9,7 @@ hmd.mx <- function(country, username, password, label=country)
     mx <- try(read.table(con, skip = 2, header = TRUE, na.strings = "."),TRUE)
     close(con)
     if(class(mx)=="try-error")
-        stop("Mx file not found at www.mortality.org")
+        stop("Connection error at www.mortality.org. Please check username, password and country label.")
 
     path <- paste("http://www.mortality.org/hmd/", country, "/STATS/", "Exposures_1x1.txt", sep = "")
     userpwd <- paste(username, ":", password, sep = "")

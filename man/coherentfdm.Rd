@@ -29,8 +29,8 @@ Working paper. \url{http://robjhyndman.com/papers/coherentfdm}
 \seealso{\code{\link{fdm}}, \code{\link{forecast.fdmpr}}}
 
 \examples{
-fr.sm <- smooth.demogdata(extract.years(fr.mort,1950:2006))
-fr.fit <- coherentfdm(fr.sm)
+fr.short <- extract.years(fr.sm,1950:2006)
+fr.fit <- coherentfdm(fr.short)
 summary(fr.fit)
 plot(fr.fit$product, components=3)
 }
