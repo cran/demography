@@ -1,8 +1,10 @@
 \name{hmd.mx}
 \alias{hmd}
 \alias{hmd.mx}
-\title{Read Mx demographic data from the Human Mortality Database}
-\usage{hmd.mx(country, username, password, label = country)  
+\alias{hmd.e0}
+\title{Read demographic data from the Human Mortality Database}
+\usage{hmd.mx(country, username, password, label = country)
+hmd.e0(country, username, password)
 }
 
 \arguments{
@@ -12,9 +14,11 @@
 \item{label}{Character string giving name of country from which the data are taken.}
 }
 
-\description{Reads "Mx" (1x1) data from the Human Mortality Database (\url{http://www.mortality.org}) and constructs a demogdata object
+\description{\code{hmd.mx} reads "Mx" (1x1) data from the Human Mortality Database (\url{http://www.mortality.org}) and constructs a demogdata object
 suitable for plotting using \code{\link{plot.demogdata}} and fitting an LC or BMS model using \code{\link{lca}} or an 
-FDA model using \code{\link{fdm}}.}
+FDA model using \code{\link{fdm}}.
+\code{hmd.lt} reads life expectancy at birth from the Human Mortality Database and returns the result as a \code{ts} object.
+}
 
 \details{In order to read the data, users are required to create their account via the HMD website (\url{http://www.mortality.org}), 
 and obtain a valid username and password.
@@ -75,16 +79,17 @@ Ukraine \tab UKR\cr
 Later additions to the HMD are listed at \url{http://www.mortality.org/cgi-bin/hmd/hmd_download.php}.
 }
 
-\value{Object of class \dQuote{demogdata} with the following components:
+\value{\code{hmd.mx} returns an object of class \code{demogdata} with the following components:
 \item{year}{Vector of years}
 \item{age}{Vector of ages}
 \item{rate}{A list containing one or more rate matrices with one age group per row and one column per year.}
 \item{pop}{A list of the same form as \code{rate} but containing population numbers instead of demographic rates.}
 \item{type}{Type of object: \dQuote{mortality}, \dQuote{fertility} or \dQuote{migration}.}
 \item{label}{label}
+\code{hmd.lt} returns an object of class \code{ts} with columns \code{male}, \code{female} and \code{total}.
 }
 
-\seealso{\code{\link{demogdata}},\code{\link{read.demogdata}}}
+\seealso{\code{\link{demogdata}},\code{\link{read.demogdata}},\code{\link{life.expectancy}}}
 
 \examples{
 \dontrun{norway <- hmd.mx("NOR", username, password, "Norway")

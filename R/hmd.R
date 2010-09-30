@@ -45,3 +45,18 @@ hmd.mx <- function(country, username, password, label=country)
     return(structure(obj, class = "demogdata"))
 }
 
+
+hmd.e0 = function(country, username, password)
+{
+    require(RCurl)
+    path <- paste("http://www.mortality.org/hmd/", country, "/STATS/", "E0per.txt", sep = "")
+    userpwd <- paste(username, ":", password, sep = "")
+    txt <- getURL(path, userpwd = userpwd)
+    con <- textConnection(txt)
+    lt <- try(read.table(con, skip = 2, header = TRUE, na.strings = "."), TRUE)
+    close(con)
+    if (class(lt) == "try-error") 
+        stop("Life expectancy file not found at www.mortality.org")
+	lt <- ts(lt[,-1],start=lt[1,1],f=1)
+    return(lt)
+}

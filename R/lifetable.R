@@ -63,21 +63,26 @@ lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=da
 		cohort <- cohort[!is.na(cohort)]
 		if(length(cohort)==0)
 			stop("No data available")
+		if(min(data$age[cohort]+n-1) < max.age)
+			warning("Insufficient data for other lifetables. Try reducing max.age")
 		for(coh in cohort)
 		{
-			subdata <- extract.ages(data,data$age[coh]:min(max.age,data$age[coh]+n-1),combine.upper=TRUE)
-			mx <- get.series(subdata$rate,series)
-			p <- nrow(mx)
-			for (j in 1:p)
-				cmx[coh+j-1,coh] <- mx[j,j]
-			ltable <- lt(cmx[coh+(1:p)-1,coh], data$age[coh], agegroup, sex=sex)
-			p <- length(ltable$lx)
-			lx[coh+(1:p)-1,coh] <- ltable$lx
-			Lx[coh+(1:p)-1,coh] <- ltable$Lx
-			ex[coh+(1:p)-1,coh] <- ltable$ex
-			qx[coh+(1:p)-1,coh] <- ltable$qx
-			dx[coh+(1:p)-1,coh] <- ltable$dx
-			Tx[coh+(1:p)-1,coh] <- ltable$Tx
+			if(data$age[coh]+n-1 > max.age)
+			{
+				subdata <- extract.ages(data,data$age[coh]:max.age,combine.upper=TRUE)
+				mx <- get.series(subdata$rate,series)
+				p <- nrow(mx)
+				for (j in 1:p)
+					cmx[coh+j-1,coh] <- mx[j,j]
+				ltable <- lt(cmx[coh+(1:p)-1,coh], data$age[coh], agegroup, sex=sex)
+				p <- length(ltable$lx)
+				lx[coh+(1:p)-1,coh] <- ltable$lx
+				Lx[coh+(1:p)-1,coh] <- ltable$Lx
+				ex[coh+(1:p)-1,coh] <- ltable$ex
+				qx[coh+(1:p)-1,coh] <- ltable$qx
+				dx[coh+(1:p)-1,coh] <- ltable$dx
+				Tx[coh+(1:p)-1,coh] <- ltable$Tx
+			}
 		}
 		mx <- cmx
 		# Retain columns in required cohort
@@ -93,7 +98,7 @@ lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=da
 	else #single age, multiple years.
 	{
 		data <- extract.years(data,years=seq(min(years),max(data$year),by=1))
-		data <- extract.ages(data,ages:min(max.age,ages+length(data$year)-1),combine.upper=TRUE)
+		data <- extract.ages(data,ages:max.age,combine.upper=TRUE)
 		n <- length(data$year)
 		p <- length(data$age)
 		ny <- length(years)
@@ -101,25 +106,32 @@ lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=da
 		rownames(cmx) <- data$age
 		colnames(cmx) <- paste(years," age ",ages,sep="")
 		qx <- dx <- Tx <- lx <- Lx <- ex <- cmx
+		minage <- max.age
 		for(i in 1:ny)
 		{
 			subdata <- extract.years(data,years=seq(years[i],max(data$year),by=1))
-			subdata <- extract.ages(subdata,ages:min(max.age,ages+length(subdata$year)-1),combine.upper=TRUE)
-			mx <- get.series(subdata$rate,series)
-			p <- nrow(mx)
-			for (j in 1:p)
-				cmx[j,i] <- mx[j,j]
-			ltable <- lt(cmx[,i],ages, agegroup, sex=sex)
-			p <- length(ltable$lx)
-			lx[1:p,i] <- ltable$lx
-			Lx[1:p,i] <- ltable$Lx
-			ex[1:p,i] <- ltable$ex
-			qx[1:p,i] <- ltable$qx
-			dx[1:p,i] <- ltable$dx
-			Tx[1:p,i] <- ltable$Tx
+			upperage <- min(ages+length(subdata$year)-1)
+			minage <- min(minage,upperage)
+			if(upperage > max.age)
+			{
+				mx <- get.series(subdata$rate,series)
+				p <- nrow(mx)
+				for (j in 1:p)
+					cmx[j,i] <- mx[j,j]
+				ltable <- lt(cmx[,i],ages, agegroup, sex=sex)
+				p <- length(ltable$lx)
+				lx[1:p,i] <- ltable$lx
+				Lx[1:p,i] <- ltable$Lx
+				ex[1:p,i] <- ltable$ex
+				qx[1:p,i] <- ltable$qx
+				dx[1:p,i] <- ltable$dx
+				Tx[1:p,i] <- ltable$Tx
+			}
 		}
 		mx <- cmx
 		rx <- NULL
+		if(minage < max.age)
+			warning("Insufficient data for other life tables. Try reducing max.age")
 	}
 
 	return(structure(list(age=ages,year=years, mx=mx,qx=qx,lx=lx,dx=dx,Lx=Lx,Tx=Tx,ex=ex,rx=rx,

@@ -1,3 +1,7 @@
+v1.05
+- Modified lifetable for type="cohort" to prevent partial lifetables being produced unless explicitly requested.
+- Added hmd.e0() function.
+
 v1.04
 - Fixed bugs in the use of weights in fdm() and smooth.demogdata()
 - Lifetable functions rewritten to remove bugs and add additional functionality for cohort lifetables.
