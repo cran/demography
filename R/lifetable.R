@@ -361,6 +361,8 @@ life.expectancy <- function(data,series=names(data$rate)[1],years=data$year,
     type <- match.arg(type)
     if(!is.el(series,names(data$rate)))
         stop(paste("Series",series,"not found"))
+	if(is.null(max.age))
+		max.age <- min(100,max(data$age))
     if(age > max.age | age > max(data$age))
         stop("age is greater than maximum age")
     else if(age < min(data$age))

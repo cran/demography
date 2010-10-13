@@ -1,3 +1,7 @@
+v1.06
+- Fixed errors in help file for hmd.e0()
+- Fixed bug in forecast.fdm after fitting with weight=TRUE.
+
 v1.05
 - Modified lifetable for type="cohort" to prevent partial lifetables being produced unless explicitly requested.
 - Added hmd.e0() function.

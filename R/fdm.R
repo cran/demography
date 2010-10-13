@@ -120,6 +120,11 @@ forecast.fdm <- function(object,h=50,jumpchoice=c("fit","actual"),
     method="arima",...)
 {
     jumpchoice <- match.arg(jumpchoice)
+	if(!is.null(object$call$weight))
+	{
+		if(object$call$weight)
+			object$weights <- rep(1,length(object$year))
+	}
     fcast <- forecast.ftsm(object,h,jumpchoice=jumpchoice,method=method,...)
 
     # Compute observational variance

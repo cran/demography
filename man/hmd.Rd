@@ -17,7 +17,7 @@ hmd.e0(country, username, password)
 \description{\code{hmd.mx} reads "Mx" (1x1) data from the Human Mortality Database (\url{http://www.mortality.org}) and constructs a demogdata object
 suitable for plotting using \code{\link{plot.demogdata}} and fitting an LC or BMS model using \code{\link{lca}} or an 
 FDA model using \code{\link{fdm}}.
-\code{hmd.lt} reads life expectancy at birth from the Human Mortality Database and returns the result as a \code{ts} object.
+\code{hmd.e0} reads life expectancy at birth from the Human Mortality Database and returns the result as a \code{ts} object.
 }
 
 \details{In order to read the data, users are required to create their account via the HMD website (\url{http://www.mortality.org}), 
@@ -86,7 +86,7 @@ Later additions to the HMD are listed at \url{http://www.mortality.org/cgi-bin/h
 \item{pop}{A list of the same form as \code{rate} but containing population numbers instead of demographic rates.}
 \item{type}{Type of object: \dQuote{mortality}, \dQuote{fertility} or \dQuote{migration}.}
 \item{label}{label}
-\code{hmd.lt} returns an object of class \code{ts} with columns \code{male}, \code{female} and \code{total}.
+\code{hmd.e0} returns an object of class \code{ts} with columns \code{male}, \code{female} and \code{total}.
 }
 
 \seealso{\code{\link{demogdata}},\code{\link{read.demogdata}},\code{\link{life.expectancy}}}
