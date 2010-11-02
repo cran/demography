@@ -1,3 +1,8 @@
+v1.07
+- Modified signs of basis functions and coefficients in fdm() to make interpretation easier. This does not affect final forecasts as the signs cancel.
+- Fixed bug in forecast.fdm after fitting with weight=TRUE.
+- In forecast.fdmpr(): restricted ARFIMA forecasts for coherent models to use data only from the last K years where K can be specified.
+
 v1.06
 - Fixed errors in help file for hmd.e0()
 - Fixed bug in forecast.fdm after fitting with weight=TRUE.

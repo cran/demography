@@ -30,6 +30,18 @@ fdm <- function(data, series=names(data$rate)[1], order=6, ages=data$age, max.ag
 
     data.fts <- fts(ages,mx,s=data$year[1],xname="Age",yname=yname)
     fit <- ftsm(data.fts, order=order, method=method, mean=mean, level=level, lambda=lambda, ...)
+	
+	# Adjust signs of output so that basis functions are primarily positive. (Easier to interpret.)
+	nx <- length(data$age)
+	for(i in 1+(1:order))
+	{
+		if(sum(fit$basis[,i] > 0) < nx/2)
+		{
+			fit$basis[,i] <- -fit$basis[,i]
+			fit$coeff[,i] <- -fit$coeff[,i]
+		}
+	}
+		
 
     if(is.element("obs.var",names(data)))
         ov <- data$obs.var[[match(series,tolower(names(data$rate)))]]
@@ -120,11 +132,10 @@ forecast.fdm <- function(object,h=50,jumpchoice=c("fit","actual"),
     method="arima",...)
 {
     jumpchoice <- match.arg(jumpchoice)
-	if(!is.null(object$call$weight))
-	{
-		if(object$call$weight)
-			object$weights <- rep(1,length(object$year))
-	}
+    
+    if(sum(object$weights < 0.1)/length(object$weights) > 0.2) # Probably exponential weights for fitting. Can be ignored for forecasting
+        object$weights[object$weights > 0] <- 1
+        
     fcast <- forecast.ftsm(object,h,jumpchoice=jumpchoice,method=method,...)
 
     # Compute observational variance

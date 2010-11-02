@@ -2,12 +2,12 @@
 \alias{forecast.fdmpr}
 \title{Forecast coherent functional demographic model.}
 \usage{
-\method{forecast}{fdmpr}(object, ...)
+\method{forecast}{fdmpr}(object, K=100,...)
 }
 
 \arguments{
 \item{object}{Output from \code{\link{coherentfdm}}.}
-\item{method}{Forecasting method to be used.}
+\item{K}{Maximum number of years to use in forecasting coefficients for ratio components.}
 \item{...}{Other arguments as for \code{\link{forecast.fdm}}.}
 }
 
