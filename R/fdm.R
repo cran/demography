@@ -237,7 +237,7 @@ plot.fmforecast <- function(x,plot.type=c("function","component","variance"),vco
         {
             x$model$basis <- cbind(x$model$ax,x$model$bx)
             x$modelcoeff <- cbind(rep(1,length(x$model$kt)),x$model$kt)
-            x$coeff <- list(NULL,x$coeff)
+            x$coeff <- list(NULL,x$kt.f)
             colnames(x$model$basis) <- c("mean","bx")
             if(x$model$adjust != "none")
                 xlab <- "kt (adjusted)"

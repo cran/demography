@@ -112,7 +112,7 @@ lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=da
 			subdata <- extract.years(data,years=seq(years[i],max(data$year),by=1))
 			upperage <- min(ages+length(subdata$year)-1)
 			minage <- min(minage,upperage)
-			if(upperage > max.age)
+			if(upperage >= max.age)
 			{
 				mx <- get.series(subdata$rate,series)
 				p <- nrow(mx)
@@ -130,8 +130,10 @@ lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=da
 		}
 		mx <- cmx
 		rx <- NULL
-		if(minage < max.age)
-			warning("Insufficient data for other life tables. Try reducing max.age")
+#		if(minage < max.age)
+#        {
+#			warning("Insufficient data for other life tables. Try reducing max.age")
+#        }
 	}
 
 	return(structure(list(age=ages,year=years, mx=mx,qx=qx,lx=lx,dx=dx,Lx=Lx,Tx=Tx,ex=ex,rx=rx,
@@ -383,30 +385,48 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
     type=c("period","cohort"), age=min(data$age), max.age=NULL,
 	PI=FALSE, nsim=500, ...)
 {
+    type <- match.arg(type)
     if(is.element("fmforecast",class(data)))
     {
 		if(data$type != "mortality")
 			stop("data not a mortality object")
         hdata <- list(year=data$model$year,age=data$model$age,
             type=data$type,label=data$model$label,lambda=data$lambda)
-		if(min(data$model[[4]],na.rm=TRUE) > 0)
-			hdata$rate <- list(data$model[[4]])
-		else
-		    hdata$rate <- list(InvBoxCox(data$model[[4]],data$lambda))
+        hdata$rate <- list(data$model[[4]])
+		if(min(hdata$rate[[1]],na.rm=TRUE) < 0) # Transformed
+		    hdata$rate <- list(InvBoxCox(hdata$rate[[1]],data$lambda))
+        if(type=="cohort")
+        {
+            hdata$year <- c(hdata$year,data$year)
+            hdata$rate <- list(cbind(hdata$rate[[1]],data$rate[[1]]))
+        }
         names(hdata$rate) <- names(data$model)[4]
 		if(!is.null(data$model$pop))
 		{
 		    hdata$pop = list(data$model$pop)
 			names(hdata$pop) <- names(hdata$rate)
+            if(type=="cohort") # Add bogus population for future years
+            {
+                n <- nrow(hdata$pop[[1]])
+                h <- length(hdata$year)-n
+                hdata$pop[[1]] <- cbind(hdata$pop[[1]],matrix(rep(hdata$pop[[1]][,n],h),nrow=nrow(hdata$pop[[1]]),ncol=h))
+            }
 		}
         class(hdata) <- "demogdata"
         # Fix missing values. Why are they there?
         hdata$rate[[1]][is.na(hdata$rate[[1]])] <- 1-1e-5
 		if(is.null(max.age))
 			max.age <- min(100,max(data$age))
-        out <- structure(list(x=life.expectancy(hdata,type=type,age=age,max.age=max.age),
-		    mean=life.expectancy(data,years=years,type=type,age=age,max.age=max.age),
-            method="FDM model"),class="forecast")
+        
+        x <- window(life.expectancy(hdata,type=type,age=age,max.age=max.age),end=max(data$model$year))      
+        xf <- na.omit(life.expectancy(data,years=years,type=type,age=age,max.age=max.age))
+        if(type=="cohort")
+        {
+            xf <- ts(c(window(x,start=max(data$model$year)-age+1),xf),start=max(data$model$year)-age+1)
+            x <- window(x,end=max(data$model$year)-age)            
+        }
+
+        out <- structure(list(x=x,mean=xf,method="FDM model"),class="forecast")
 		if(is.element("lca",class(data$model)))
 			out$method = "LC model"
 		else if(!is.null(data$product))
@@ -419,21 +439,34 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
 			else
 			{
 				sim <- simulate(data,nsim,...)
+                if(type=="cohort") # Add actual rates for first few years
+                {
+                    ny <- length(data$model$year) - length(x)
+                    sim2 <- array(NA,c(dim(sim)[1],dim(sim)[2]+ny,dim(sim)[3]))
+                    sim2[,(ny+1):dim(sim2)[2],] <- sim
+                    hrates <- hdata$rate[[1]][,length(x) + (1:ny)]
+                    sim2[,1:ny,] <- array(rep(hrates,dim(sim)[2]),c(dim(sim)[1],ny,dim(sim)[3]))
+                    sim <- sim2
+                    rm(sim2)
+                }
 				if(e0calc)
 				{
 					e0sim <- matrix(NA,dim(sim)[2],dim(sim)[3])
 					simdata <- data
+                    if(type=="cohort")
+                        simdata$year <- min(time(out$mean))-1 + 1:(length(out$mean)+ny)
 					for(i in 1:dim(sim)[3])
 					{
-						simdata$rate[[1]] <- as.matrix(sim[,,i])
+						simdata$rate <- list(as.matrix(sim[,,i]))
+                        names(simdata$rate) <- names(data$rate)[1]
 						e0sim[,i] <- life.expectancy(simdata,type=type,age=age,max.age=max.age)
 					}
 					if(is.element("lca",class(data$model)))
 						out$level <- data$kt.f$level
 					else
 						out$level <- data$coeff[[1]]$level
-					out$lower <- ts(apply(e0sim,1,quantile,prob=0.5 - out$level/200))
-					out$upper <- ts(apply(e0sim,1,quantile,prob=0.5 + out$level/200))
+					out$lower <- na.omit(ts(apply(e0sim,1,quantile,prob=0.5 - out$level/200,na.rm=TRUE)))
+					out$upper <- na.omit(ts(apply(e0sim,1,quantile,prob=0.5 + out$level/200,na.rm=TRUE)))
 					tsp(out$lower) <- tsp(out$upper) <- tsp(out$mean)
 				}
 				out$sim <- sim

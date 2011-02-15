@@ -38,5 +38,6 @@ Other components included are
 france.lca <- lca(fr.mort, adjust="e0")
 france.fcast <- forecast(france.lca, 50)
 plot(france.fcast)
+plot(france.fcast,'c')
 }
 \keyword{models}

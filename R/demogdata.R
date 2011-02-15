@@ -325,7 +325,10 @@ extract.ages <- function(data,ages,combine.upper=TRUE)
     if(combine.upper)
 	{
 		if(no.pop)
-			warning("No population data available for combining upper ages")
+        {
+            if(max(data$age) > max(ages))   
+                warning("No population data available for combining upper ages")
+        }
 		else
 			data <- set.upperage(data,max(ages))
 	}

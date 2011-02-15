@@ -1,3 +1,8 @@
+v1.08
+- Fixed bug in plot.fmforecast() when plotting coefficients from lca object.
+- Fixed several bugs in flife.expectancy() for forecasting cohort life expectancy.
+- Fixed bug in lifetable() when type="cohort" and ages of length 1 to give one additional year.
+
 v1.07
 - Modified signs of basis functions and coefficients in fdm() to make interpretation easier. This does not affect final forecasts as the signs cancel.
 - Fixed bug in forecast.fdm after fitting with weight=TRUE.
