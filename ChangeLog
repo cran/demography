@@ -1,3 +1,7 @@
+v1.09
+- Extended flife.expectancy() for use when there is insufficient historical data to compute cohort life expectancy.
+- Fixed a bug in flife.expectancy() when type="cohort".
+
 v1.08
 - Fixed bug in plot.fmforecast() when plotting coefficients from lca object.
 - Fixed several bugs in flife.expectancy() for forecasting cohort life expectancy.

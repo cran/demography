@@ -407,7 +407,7 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
 			names(hdata$pop) <- names(hdata$rate)
             if(type=="cohort") # Add bogus population for future years
             {
-                n <- nrow(hdata$pop[[1]])
+                n <- ncol(hdata$pop[[1]])
                 h <- length(hdata$year)-n
                 hdata$pop[[1]] <- cbind(hdata$pop[[1]],matrix(rep(hdata$pop[[1]][,n],h),nrow=nrow(hdata$pop[[1]]),ncol=h))
             }
@@ -422,8 +422,11 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
         xf <- na.omit(life.expectancy(data,years=years,type=type,age=age,max.age=max.age))
         if(type=="cohort")
         {
-            xf <- ts(c(window(x,start=max(data$model$year)-age+1),xf),start=max(data$model$year)-age+1)
-            x <- window(x,end=max(data$model$year)-age)            
+            xf <- ts(c(window(x,start=max(data$model$year)-max.age+age+1),xf),end=max(time(xf)))
+            if(min(time(x)) > max(data$model$year)-max.age+age)
+                x <- ts(NA,end=min(time(xf))-1)
+            else
+                x <- window(x,end=max(data$model$year)-max.age+age)
         }
 
         out <- structure(list(x=x,mean=xf,method="FDM model"),class="forecast")
@@ -441,10 +444,11 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
 				sim <- simulate(data,nsim,...)
                 if(type=="cohort") # Add actual rates for first few years
                 {
-                    ny <- length(data$model$year) - length(x)
+                    usex <- length(x)*any(!is.na(x))
+                    ny <- length(data$model$year) - usex
                     sim2 <- array(NA,c(dim(sim)[1],dim(sim)[2]+ny,dim(sim)[3]))
                     sim2[,(ny+1):dim(sim2)[2],] <- sim
-                    hrates <- hdata$rate[[1]][,length(x) + (1:ny)]
+                    hrates <- hdata$rate[[1]][,usex + (1:ny)]
                     sim2[,1:ny,] <- array(rep(hrates,dim(sim)[2]),c(dim(sim)[1],ny,dim(sim)[3]))
                     sim <- sim2
                     rm(sim2)
@@ -454,7 +458,7 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
 					e0sim <- matrix(NA,dim(sim)[2],dim(sim)[3])
 					simdata <- data
                     if(type=="cohort")
-                        simdata$year <- min(time(out$mean))-1 + 1:(length(out$mean)+ny)
+                        simdata$year <- min(time(out$mean))-1 + 1:dim(sim)[2]
 					for(i in 1:dim(sim)[3])
 					{
 						simdata$rate <- list(as.matrix(sim[,,i]))
