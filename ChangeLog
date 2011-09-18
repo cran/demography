@@ -1,3 +1,8 @@
+v1.10
+- show.labels argument dropped from plot.demogdata() as the facility has been dropped by plot.fds() in the rainbow package.
+- Fixed a bug in lifetable() when dealing with age groups of more than 1 year.
+- Fixed bug in plot.demogdata() when logarithms of zero rates are calculated.
+
 v1.09
 - Extended flife.expectancy() for use when there is insufficient historical data to compute cohort life expectancy.
 - Fixed a bug in flife.expectancy() when type="cohort".

@@ -152,7 +152,7 @@ forecast.fdm <- function(object,h=50,jumpchoice=c("fit","actual"),
 #    browser()
     ysd <- s*NA
     for(i in 1:ncol(ysd))
-        ysd[,i] <- spline(object$age, s[,i], n=nrow(fcast$var$total))$y
+       ysd[,i] <- spline(object$age, s[,i], n=nrow(fcast$var$total))$y
     ysd <- rowMeans(ysd)
 
 #    browser()

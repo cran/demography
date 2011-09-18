@@ -132,7 +132,7 @@ read.demogdata <- function(file,popfile,type,label,max.mx=10,skip=2,popskip=skip
 plot.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],names(x$pop)[1]), 
     datatype=ifelse(!is.null(x$rate),"rate","pop"),
     years=x$year, ages=x$age, max.age=max(x$age), transform=(x$type=="mortality"),
-    plot.type= c("functions", "time", "depth", "density"), show.labels=TRUE, type="l", main=NULL, xlab, ylab,...)
+    plot.type= c("functions", "time", "depth", "density"), type="l", main=NULL, xlab, ylab,...)
 {
     plot.type <- match.arg(plot.type)
     series <- tolower(series)
@@ -154,6 +154,7 @@ plot.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],na
             y <- BoxCox(y,data$lambda)
         else # Population
             y <- log(y)
+        y[abs(y)==Inf] <- NA
     }
 
     # Choose appropriate y axis label
@@ -211,15 +212,13 @@ plot.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],na
     else if(missing(xlab))
         xlab <- "Age"
 
-    plot(fts(data$age,y,s=years[1],f=1,yname="",xname=""),plot.type=plot.type,
-        labels=switch(show.labels+1,NULL,rownames(y)),xlab=xlab,
-        ylab=ylab,main=main,type=type,...)
+    plot(fts(data$age,y,s=years[1],f=1,yname="",xname=""),plot.type=plot.type,xlab=xlab, ylab=ylab,main=main,type=type,...)
 }
 
 lines.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],names(x$pop)[1]), 
     datatype=ifelse(!is.null(x$rate),"rate",""),
     years=x$year, ages=x$age, max.age=max(x$age), transform=(x$type=="mortality"),
-    plot.type= c("functions", "time", "depth", "density"), show.labels=TRUE,  ...)
+    plot.type= c("functions", "time", "depth", "density"), ...)
 {
     plot.type <- match.arg(plot.type)
     
@@ -243,7 +242,7 @@ lines.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],n
     }
 
     # Set other arguments to appropriate values
-    lines(fts(data$age,y,s=years[1],f=1),plot.type=plot.type, labels=switch(show.labels+1,NULL,rownames(y)),...)
+    lines(fts(data$age,y,s=years[1],f=1),plot.type=plot.type, ...)
 }
 
 points.demogdata <- function(...,pch=1)

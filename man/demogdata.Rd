@@ -6,7 +6,7 @@
 
 \arguments{
 \item{data}{Matrix of data: either mortality rates or fertility rates}
-\item{pop}{Matrix of population values of same dimension as data.}
+\item{pop}{Matrix of population values of same dimension as data. These are population numbers as at 30 June of each year (i.e., the "exposures"). So, for example, the number of deaths is data*pop if data contains mortality rates.}
 \item{ages}{Vector of ages corresponding to rows of \code{data}.}
 \item{years}{Vector of years corresponding to columns of \code{data}.}
 \item{type}{Character string showing type of demographic series:

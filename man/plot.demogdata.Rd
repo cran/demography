@@ -8,13 +8,12 @@
     years=x$year, ages=x$age, max.age=max(x$age), 
     transform=(x$type=="mortality"), 
     plot.type=c("functions","time","depth","density"), 
-    show.labels=TRUE, type="l", main=NULL, xlab, ylab,...)
+    type="l", main=NULL, xlab, ylab,...)
 \method{lines}{demogdata}(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],names(x$pop)[1]), 
     datatype=ifelse(!is.null(x$rate),"rate",""),
     years=x$year, ages=x$age, max.age=max(x$age), 
     transform=(x$type=="mortality"), 
-    plot.type=c("functions","time","depth","density"), 
-    show.labels=TRUE,  ...)
+    plot.type=c("functions","time","depth","density"), ...)
 \method{points}{demogdata}(..., pch = 1)
 }
 
@@ -28,7 +27,6 @@
 \item{max.age}{Maximum age to plot. Default: all available ages.}
 \item{transform}{Should a transformation of the data be plotted? Default is TRUE if the object contains mortality data and datatype="rate", and FALSE otherwise.}
 \item{plot.type}{Type of plot: either \dQuote{functions} or \dQuote{time}.}
-\item{show.labels}{If \code{plot.type="time"} and \code{show.labels=TRUE}, then each time series is labelled.}
 \item{type}{What type of plot should be drawn. See \code{\link[graphics]{plot}} for possible types.}
 \item{main}{Main title for the plot.}
 \item{xlab}{Label for x-axis.}
