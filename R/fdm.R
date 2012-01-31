@@ -129,14 +129,18 @@ plot.fmres <- function(x,type=c("image","fts","contour","persp"),xlab="Year",yla
 }
 
 forecast.fdm <- function(object,h=50,jumpchoice=c("fit","actual"),
-    method="arima",...)
+    method="arima",warnings=FALSE,...)
 {
     jumpchoice <- match.arg(jumpchoice)
     
     if(sum(object$weights < 0.1)/length(object$weights) > 0.2) # Probably exponential weights for fitting. Can be ignored for forecasting
         object$weights[object$weights > 0] <- 1
-        
+    
+    oldwarn <- options()$warn
+    olderror <- options()$show.error.messages
+    options(show.error.messages=warnings,warn=ifelse(warnings,0,-1))
     fcast <- forecast.ftsm(object,h,jumpchoice=jumpchoice,method=method,...)
+    options(show.error.messages=olderror,warn=oldwarn)
 
     # Compute observational variance
     # Update to deal with general transformations
@@ -148,7 +152,9 @@ forecast.fdm <- function(object,h=50,jumpchoice=c("fit","actual"),
 #    else if(object$type=="fertility") # Use Poisson distribution
 #        s <- sqrt((fred/1000)^(2*object$lambda-1)/pmax(object$pop,1))
 #    else
-        s <- sqrt(object$obs.var)
+#      {
+        s <- sqrt(abs(object$obs.var))
+#      }
 #    browser()
     ysd <- s*NA
     for(i in 1:ncol(ysd))

@@ -57,6 +57,7 @@ netmigration <- function(mort,fert,mfratio=1.05)
     mig$rate$female <- Mf
     mig$rate$male <- Mm
     mig$rate$total <- Mm+Mf
+    mig$pop$total <- mig$pop$male + mig$pop$female
     mig$lambda=1
     dimnames(mig$rate$male) <- dimnames(mig$rate$female) <- dimnames(mig$rate$total) <- dimnames(mig$pop$male)
     mig$type <- "migration"

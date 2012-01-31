@@ -548,9 +548,9 @@ median.demogdata <- function(x,series=names(x$rate)[1],
 sex.ratio <- function(data) 
 {
     if (class(data) == "demogdata") 
-        rate.sr <- fts(x=data$age,y=data$rate$male/data$rate$female,start=min(data$year),f=1,xname="Age",yname="Year")
+        rate.sr <- fts(x=data$age,y=data$rate$male/data$rate$female,start=min(data$year),f=1,xname="Age",yname="Sex ratio (M/F)")
     else if(class(data) == "fmforecast2") 
-        rate.sr <- fts(x=data$male$age,data$male$rate$male/data$female$rate$female,start=min(data$male$year),f=1,xname="Age",yname="Year")
+        rate.sr <- fts(x=data$male$age,data$male$rate$male/data$female$rate$female,start=min(data$male$year),f=1,xname="Age",yname="Sex ratio (M/F)")
     else
         stop("Unknown class of data")
     return(rate.sr)

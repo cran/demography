@@ -1,3 +1,8 @@
+v1.11
+- added warnings option to forecast.fdm().
+- fixed rare error in forecast.fdm()
+- fixed incorrect label returned by sex.ratio()
+
 v1.10
 - show.labels argument dropped from plot.demogdata() as the facility has been dropped by plot.fds() in the rainbow package.
 - Fixed a bug in lifetable() when dealing with age groups of more than 1 year.

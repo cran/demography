@@ -3,7 +3,7 @@
 \title{Forecast functional demographic model.}
 \usage{
 \method{forecast}{fdm}(object, h = 50, jumpchoice = c("fit", "actual"), method =
-				 "arima", ...)
+				 "arima", warnings=FALSE, ...)
 }
 
 \arguments{
@@ -12,6 +12,7 @@
 \item{jumpchoice}{If "actual", the forecasts are bias-adjusted by the difference between the fit and the last year of observed data.
 	Otherwise, no adjustment is used.}
 \item{method}{Forecasting method to be used.}
+\item{warnings}{If TRUE, warnings arising from the forecast models for coefficients will be shown. Most of these can be ignored, so the default is \code{warnings=FALSE}.}
 \item{...}{Other arguments as for \code{\link[ftsa]{forecast.ftsm}}.}
 }
 
