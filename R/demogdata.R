@@ -212,7 +212,7 @@ plot.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],na
     else if(missing(xlab))
         xlab <- "Age"
 
-    plot(fts(data$age,y,s=years[1],f=1,yname="",xname=""),plot.type=plot.type,xlab=xlab, ylab=ylab,main=main,type=type,...)
+    plot(fts(data$age,y,start=years[1],frequency=1,yname="",xname=""),plot.type=plot.type,xlab=xlab, ylab=ylab,main=main,type=type,...)
 }
 
 lines.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],names(x$pop)[1]), 
@@ -242,7 +242,7 @@ lines.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],n
     }
 
     # Set other arguments to appropriate values
-    lines(fts(data$age,y,s=years[1],f=1),plot.type=plot.type, ...)
+    lines(fts(data$age,y,start=years[1],frequency=1),plot.type=plot.type, ...)
 }
 
 points.demogdata <- function(...,pch=1)
@@ -548,9 +548,9 @@ median.demogdata <- function(x,series=names(x$rate)[1],
 sex.ratio <- function(data) 
 {
     if (class(data) == "demogdata") 
-        rate.sr <- fts(x=data$age,y=data$rate$male/data$rate$female,start=min(data$year),f=1,xname="Age",yname="Sex ratio (M/F)")
+        rate.sr <- fts(x=data$age,y=data$rate$male/data$rate$female,start=min(data$year),frequency=1,xname="Age",yname="Sex ratio (M/F)")
     else if(class(data) == "fmforecast2") 
-        rate.sr <- fts(x=data$male$age,data$male$rate$male/data$female$rate$female,start=min(data$male$year),f=1,xname="Age",yname="Sex ratio (M/F)")
+        rate.sr <- fts(x=data$male$age,data$male$rate$male/data$female$rate$female,start=min(data$male$year),frequency=1,xname="Age",yname="Sex ratio (M/F)")
     else
         stop("Unknown class of data")
     return(rate.sr)

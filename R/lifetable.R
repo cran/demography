@@ -294,7 +294,7 @@ plot.lifetable <- function(x,years=x$year,main,xlab="Age",ylab="Expected number 
             main <- paste(main," (",years,")",sep="")
     }
 
-    plot(fts(x$age,x$ex[,idx],s=years[1],f=1),main=main,ylab=ylab,xlab=xlab,...)
+    plot(fts(x$age,x$ex[,idx],start=years[1],frequency=1),main=main,ylab=ylab,xlab=xlab,...)
 }
 
 lines.lifetable <- function(x,years=x$year,...)
@@ -310,7 +310,7 @@ lines.lifetable <- function(x,years=x$year,...)
     years <- x$year[idx]
     ny <- length(years)
 
-    lines(fts(x$age,x$ex[,idx],s=x$year[1],f=1),...)
+    lines(fts(x$age,x$ex[,idx],start=x$year[1],frequency=1),...)
 }
 
 print.lifetable <- function(x,digits=4,...)
@@ -382,7 +382,7 @@ life.expectancy <- function(data,series=names(data$rate)[1],years=data$year,
     #if(sum(is.na(data.lt[idx,]))>0 | max(data.lt[idx,]) > 1e9)
     #    warning("Some missing or infinite values in the life table calculation.\n  These can probably be avoided by setting max.age to a lower value.")
 
-    return(ts(data.lt[idx,],s=years[1],f=1))
+    return(ts(data.lt[idx,],start=years[1],frequency=1))
 }
 
 

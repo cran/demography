@@ -10,7 +10,7 @@ tfr <- function(data, PI=FALSE, nsim=500, ...)
     tfr.mat <- matrix(NA,ncol=n,nrow=length(data$year))
     for(j in 1:n)
         tfr.mat[,j] <- colSums(data$rate[[j]],na.rm=TRUE)*agegroup
-    out <- ts(tfr.mat,s=data$year[1],f=1)
+    out <- ts(tfr.mat,start=data$year[1],frequency=1)
     if(is.element("fmforecast",class(data)))
     {
         hdata <- data$model

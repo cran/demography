@@ -28,7 +28,7 @@ fdm <- function(data, series=names(data$rate)[1], order=6, ages=data$age, max.ag
     else
         mx <- get.series(data$rate,series)
 
-    data.fts <- fts(ages,mx,s=data$year[1],xname="Age",yname=yname)
+    data.fts <- fts(ages,mx,start=data$year[1],xname="Age",yname=yname)
     fit <- ftsm(data.fts, order=order, method=method, mean=mean, level=level, lambda=lambda, ...)
 	
 	# Adjust signs of output so that basis functions are primarily positive. (Easier to interpret.)
@@ -123,7 +123,7 @@ plot.fmres <- function(x,type=c("image","fts","contour","persp"),xlab="Year",yla
     type <- match.arg(type)
     switch(type,
         image = image(x$x,x$y,x$z,ylab=ylab,xlab=xlab,...),
-        fts = plot(fts(x$y,t(x$z),s=x$x[1],xname="Age",yname="Residuals demographic rate"),...),
+        fts = plot(fts(x$y,t(x$z),start=x$x[1],xname="Age",yname="Residuals demographic rate"),...),
         contour = contour(x$x,x$y,x$z,ylab=ylab,xlab=xlab,...),
         persp = persp(x$x,x$y,x$z,ylab=ylab,xlab=xlab,zlab=zlab,...))
 }
@@ -144,7 +144,7 @@ forecast.fdm <- function(object,h=50,jumpchoice=c("fit","actual"),
 
     # Compute observational variance
     # Update to deal with general transformations
-    fred <- InvBoxCox(object[[4]],object$lambda)
+#    fred <- InvBoxCox(object[[4]],object$lambda)
 #    if(object$type != "migration")
 #        fred <- pmax(fred,0.000000001)
 #    if(object$type == "mortality") # Use binomial distribution
@@ -303,7 +303,7 @@ fdmMISE <- function(actual,estimate,age=NULL,years=NULL,neval=1000)
     p <- length(age)
     actual = actual[1:p,]
     estimate = estimate[1:p,]
-    out <- ftsa:::MISE(fts(age,actual,s=years[1],f=1),fts(age,estimate,s=years[1],f=1),neval=neval)
+    out <- ftsa:::MISE(fts(age,actual,start=years[1],frequency=1),fts(age,estimate,start=years[1],frequency=1),neval=neval)
     out$age <- age
     out$years <- years
     return(out)
@@ -340,7 +340,7 @@ compare.demogdata <- function(data, forecast, series=names(forecast$rate)[1],
     rownames(junk2) = years
     colnames(junk2) = c("IE","IAE","ISE","IPE","IAPE")
     fred <- list(label=data$label,age=ages,year=years,error=junkb$error,terror=junka$error,
-        mean.error=junk1,int.error=ts(junk2,s=years[1],f=1))
+        mean.error=junk1,int.error=ts(junk2,start=years[1],frequency=1))
     names(fred)[4] <- paste(series,"error")
     names(fred)[5] <- paste(series,"transformed error")
 
@@ -388,7 +388,7 @@ print.errorfdm <- function(x,...)
 plot.errorfdm <- function(x,transform=TRUE,...)
 {
     i <- ifelse(transform,5,4)
-    plot(fts(x=x$age,y=x[[i]],start=x$year[1],f=1,xname="Age",yname=names(x)[i]),...)
+    plot(fts(x=x$age,y=x[[i]],start=x$year[1],frequency=1,xname="Age",yname=names(x)[i]),...)
 }
 
 isfe <- function(...) UseMethod("isfe")
@@ -408,7 +408,7 @@ isfe.demogdata <- function(data,series=names(data$rate)[1],max.order=N-3,N=10,h=
     ages <- data$age
     mx <- BoxCox(get.series(data$rate,series),data$lambda)
     mx[mx < -1e9] <- NA
-    data.fts <- fts(ages,mx,s=data$year[1],xname="Age",yname="")
+    data.fts <- fts(ages,mx,start=data$year[1],xname="Age",yname="")
     return(isfe(data.fts,max.order=max.order,N=N,h=h,method=method,fmethod=fmethod,lambda=lambda,...))
 }
 

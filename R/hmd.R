@@ -57,6 +57,6 @@ hmd.e0 = function(country, username, password)
     close(con)
     if (class(lt) == "try-error") 
         stop("Life expectancy file not found at www.mortality.org")
-	lt <- ts(lt[,-1],start=lt[1,1],f=1)
+	lt <- ts(lt[,-1],start=lt[1,1],frequency=1)
     return(lt)
 }
