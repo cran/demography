@@ -14,7 +14,7 @@ tfr <- function(data, PI=FALSE, nsim=500, ...)
     if(is.element("fmforecast",class(data)))
     {
         hdata <- data$model
-        hdata$rate <- list(InvBoxCox(hdata$female,data$lambda))
+        hdata$rate <- list(InvBoxCox(hdata[[4]],data$lambda))
         names(hdata$rate) <- names(hdata)[4]
 		if(!is.null(data$model$pop))
 		{

@@ -11,10 +11,7 @@ simulate.fmforecast <- function(object,nsim=100,seed=NULL,bootstrap=FALSE,
 	# Fix lca objects to be able to use this function.
 	if(is.element("lca",class(object$model)))
 	{
-		if(abs(object$model$kt[n]) < 1e-8) # Used actuals as jump-off
-			object$model$basis <- cbind(log(object$model[[4]][,n]),object$model$bx)
-		else
-			object$model$basis <- cbind(object$model$ax,object$model$bx)
+		object$model$basis <- cbind(log(object$model$jumprates), object$model$bx)
 		object$model$coeff <- ts(cbind(rep(1,n),object$model$kt))
 		tsp(object$model$coeff) <- tsp(object$model$kt)
 		zval <- qnorm(0.5 + 0.005*object$kt.f$level)
