@@ -70,9 +70,7 @@ lca <-  function(data,series=names(data$rate)[1],years=data$year, ages=data$age,
     if(sum(ax < -1e9) > 0)
         stop("Some mortality rates are zero.\n Try reducing the maximum age or setting interpolate=TRUE.")
     clogrates <- sweep(logrates,2,ax) # central log rates (with ax subtracted) (dimensions m*n)
-    svd.mx <- try(svd(clogrates))
-    if(class(svd.mx)=="try-error")
-        svd.mx <- svd(clogrates,LINPACK=TRUE)
+    svd.mx <- svd(clogrates)
 
     # Extract first principal component
     sumv <- sum(svd.mx$v[,1])
