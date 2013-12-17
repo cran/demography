@@ -22,7 +22,7 @@ demogdata <- function(data, pop, ages, years, type, label, name, lambda)
     if(length(years) != n)
         stop("Number of years doesn't match data")
 
-    types <- c("mortality","fertility","migration")
+    types <- c("mortality","fertility","migration","population")
     idx <- pmatch(type,types)
     if(is.na(idx))
         warning("Unknown type")
@@ -39,10 +39,19 @@ demogdata <- function(data, pop, ages, years, type, label, name, lambda)
             lambda <- 1
     }
 
-    obj <- list(year=years, age=ages, rate=list(as.matrix(data)), pop=list(as.matrix(pop)), type=type,
-        label=label, lambda=lambda)
-    dimnames(obj$rate[[1]]) <- dimnames(obj$pop[[1]]) <- list(ages,years)
-    names(obj$rate) <- names(obj$pop) <- name
+    if(type=="population")
+    {
+        obj <- list(year=years, age=ages, pop=list(as.matrix(pop)), type=type,
+            label=label, lambda=lambda)
+        dimnames(obj$pop[[1]]) <- list(ages,years)
+    }
+    else
+    {
+        obj <- list(year=years, age=ages, rate=list(as.matrix(data)), pop=list(as.matrix(pop)), type=type,
+            label=label, lambda=lambda)
+        dimnames(obj$rate[[1]]) <- dimnames(obj$pop[[1]]) <- list(ages,years)
+        names(obj$rate) <- names(obj$pop) <- name
+    }
     return(structure(obj,class="demogdata"))
 }
 
@@ -54,8 +63,9 @@ demogdata <- function(data, pop, ages, years, type, label, name, lambda)
 # Assume age cycles within year and all in order.
 # Population file of same format.
 # Output format:  object of class demogdata
+# scale indicates the rates. scale=1 means per person. scale=1000 means per 1000 people.
 
-read.demogdata <- function(file,popfile,type,label,max.mx=10,skip=2,popskip=skip,lambda)
+read.demogdata <- function(file,popfile,type,label,max.mx=10,skip=2,popskip=skip,lambda, scale=1)
 {
     if(missing(lambda))
     {
@@ -88,6 +98,8 @@ read.demogdata <- function(file,popfile,type,label,max.mx=10,skip=2,popskip=skip
             # Check bounds
             obj$rate[[i]][obj$rate[[i]] < 0] <- NA
             obj$rate[[i]][obj$rate[[i]] > max.mx] <- max.mx
+            if(scale > 1)
+              obj$rate[[i]] <- obj$rate[[i]] / scale
             dimnames(obj$rate[[i]]) <- list(obj$age,obj$year)
         }
         names(obj$rate) = tolower(mnames)
@@ -138,6 +150,8 @@ plot.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],na
     series <- tolower(series)
     ages <- ages[ages <= max.age]
     data <- extract.ages(extract.years(x,years),ages,FALSE)
+    if(x$type == "population")
+        datatype <- "pop"
 
     # Extract data matrix
     if(!is.element(datatype,names(data)))
@@ -226,6 +240,9 @@ lines.demogdata <- function(x, series=ifelse(!is.null(x$rate),names(x$rate)[1],n
     ages <- ages[ages <= max.age]
     data <- extract.ages(extract.years(x,years),ages,FALSE)
 
+    if(x$type == "population")
+        datatype <- "pop"
+        
     # Extract data matrix
     if(!is.element(datatype,names(data)))
         stop(paste("Data type",datatype,"not found"))
