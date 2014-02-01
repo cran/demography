@@ -1,5 +1,5 @@
-574b3317d31dc7d9385c7041022bd99c *ChangeLog
-73dd9a71a234aa96c74f36cfedb8440b *DESCRIPTION
+77b44e8b4d006756ae20f71c2cd78ab9 *ChangeLog
+65b237a59b2c8760db207b2ed1daaf41 *DESCRIPTION
 612e10f1348c808dffa1875ad35fa5e5 *NAMESPACE
 0be917c2d704234eb94d20be7ff56a37 *R/attach.R
 3bcef9d02d79c294a44e22c4c918c740 *R/coherent.R
@@ -9,7 +9,7 @@ c6e1f8f65f58757cc5e4a9d0b0a32360 *R/fertility.R
 f7b6c022e955c52b069c727011a1261c *R/hmd.R
 23e3fd09a1663b2e38c812114a60398e *R/lca.R
 9a5911de20c7cb28d9145e0d9b5ab5dd *R/lifetable.R
-cc55a794abc556b19c929aec70768ab0 *R/monotonic.R
+29e9e6fa7b0b055ef42696d0ef3925f3 *R/monotonic.R
 e7ffcf022d7e482bc58969e5a7499f28 *R/netmigration.R
 2fe6396c8cf0be14c2444d10a916dda7 *R/robust.R
 3d8a40b1d62c21256a6f34587e3e2ac1 *R/simulate.R
@@ -34,13 +34,13 @@ eaa22b8a27275e8e4cc8dc7f9fc2734f *man/forecast.lca.Rd
 ee80175bc4e98c623fbef721e76e2b29 *man/fr.mort.Rd
 eb88ac4f7b1e07d1049402bd150436c4 *man/hmd.Rd
 4696f7e1ba101264578a0ef6dffabe13 *man/isfe.Rd
-bbac7402018c7d93ae39c152b25e1c5b *man/lca.Rd
+62f4c0e99b403ea98e4ba79f52368c13 *man/lca.Rd
 e5687ba7a4e71318db516f016eb0fb84 *man/life.expectancy.Rd
 ae33521fdc410c033c484b17244bcd5d *man/lifetable.Rd
 dd111753b7ee5f4f9f55ff55f263f7d7 *man/mean.demogdata.Rd
 b3f15b8499ff8870d52036eea15d84e6 *man/median.Rd
 3cd40d7904bc05aaf0e026cd92f943dc *man/migration.Rd
-a485e4d02921712cb9a5c34c3465e26a *man/models.Rd
+ddc887dd63795a7f8531a0fe0868653d *man/models.Rd
 7b44190bc17b640484c9b9178b8b14ac *man/monotonic.Rd
 2cbf1a4fd0e9f611bf659dae8d015437 *man/plot.demogdata.Rd
 c8e69a7a27ceea500af8b48915f93239 *man/plot.errorfdm.Rd
@@ -54,5 +54,5 @@ f6648fac7e7fdd5d648741404679d2e5 *man/sex.ratio.Rd
 17f809951997a8d60d3a2565ed585980 *man/simulate.fmforecast.Rd
 66f49944d015beb0bda5cf59a654b698 *man/smooth.demogdata.Rd
 79b0582d5ce123bf78ab40dc161b94de *man/summary.fdm.Rd
-09636b1fe927738ca77c8de54f570b98 *man/tfr.Rd
-e6ccacad5150ae71e17bc550bfee0329 *man/update.Rd
+de3d766dbda815a55ad6e998cde3b9c0 *man/tfr.Rd
+5b3266328fd4038f59dccd125a040304 *man/update.Rd
