@@ -42,7 +42,6 @@ fdm <- function(data, series=names(data$rate)[1], order=6, ages=data$age, max.ag
 		}
 	}
 
-
     if(is.element("obs.var",names(data)))
         ov <- data$obs.var[[match(series,tolower(names(data$rate)))]]
     else
@@ -53,7 +52,7 @@ fdm <- function(data, series=names(data$rate)[1], order=6, ages=data$age, max.ag
         fitted=fit$fitted,
         residuals=fit$residuals,
         basis=fit$basis,coeff=fit$coeff,
-        mean.se=fit$mean.se,varprop=fit$varprop, weights=fit$wt,
+        mean.se=fit$mean.se,varprop=fit$varprop, weights=fit$wt,wt=fit$wt,
         obs.var=ov,
         v=fit$v,type=data$type,
         y=data.fts,
@@ -118,19 +117,18 @@ residuals.fdm <- function(object,...)
     return(structure(list(x=object$year,y=object$age,z=t(object$residuals$y)),class="fmres"))
 }
 
-forecast.fdm <- function(object,h=50,level=80, jumpchoice=c("fit","actual"),
-    method="arima",warnings=FALSE,...)
+forecast.fdm <- function(object, h=50, level=80, jumpchoice=c("fit","actual"),
+    method="arima", warnings=FALSE, ...)
 {
     jumpchoice <- match.arg(jumpchoice)
 
     if(sum(object$weights < 0.1)/length(object$weights) > 0.2) # Probably exponential weights for fitting. Can be ignored for forecasting
         object$weights[object$weights > 0] <- 1
 
-    oldwarn <- options()$warn
-    olderror <- options()$show.error.messages
-    options(show.error.messages=warnings,warn=ifelse(warnings,0,-1))
-    fcast <- forecast.ftsm(object,h=h,level=level,jumpchoice=jumpchoice,method=method,...)
-    options(show.error.messages=olderror,warn=oldwarn)
+    if(warnings)
+      fcast <- forecast.ftsm(object,h=h,level=level,jumpchoice=jumpchoice,method=method,...)
+    else
+      suppressWarnings(fcast <- forecast.ftsm(object,h=h,level=level,jumpchoice=jumpchoice,method=method,...))
 
     # Compute observational variance
     # Update to deal with general transformations
@@ -257,7 +255,10 @@ models.fmforecast <- function(object, select=0, ...)
 	for(i in select)
 	{
 		cat("\n-- Coefficient",i,"--\n")
-		print(object$coeff[[i+1]]$model$model)
+        mod <- object$coeff[[i+1]]$model$model 
+        if(is.null(mod))
+            mod <- object$coeff[[i+1]]$model
+		print(mod)
 	}
 }
 
@@ -450,10 +451,10 @@ summary.fmforecast <- function(object,...)
 {
     print(object)
 
-    cat("\nERROR MEASURES BASED ON MORTALITY RATES\n")
+    cat(sprintf("\nERROR MEASURES BASED ON %s RATES\n", toupper(object$type)))
     printout(fdmMISE(object$model$y$y,exp(object$fitted$y),age=object$age,years=object$model$year))
 
-    cat("\nERROR MEASURES BASED ON LOG MORTALITY RATES\n")
+    cat(sprintf("\nERROR MEASURES BASED ON LOG %s RATES\n", toupper(object$type)))
     printout(fdmMISE(log(object$model$y$y),object$fitted$y,age=object$age,years=object$model$year))
 }
 
