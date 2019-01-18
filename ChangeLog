@@ -1,3 +1,7 @@
+v1.21
+ - Fixed hmd functions to use https
+ - Updated to work with forecast v8.5
+
 v1.20
  - Removed dependency on ftsa now that we no longer need a special median function.
 
