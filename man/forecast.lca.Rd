@@ -4,8 +4,14 @@
 \alias{forecast.lca}
 \title{Forecast demogdata data using Lee-Carter method.}
 \usage{
-\method{forecast}{lca}(object, h = 50, se = c("innovdrift",
-  "innovonly"), jumpchoice = c("fit", "actual"), level = 80, ...)
+\method{forecast}{lca}(
+  object,
+  h = 50,
+  se = c("innovdrift", "innovonly"),
+  jumpchoice = c("fit", "actual"),
+  level = 80,
+  ...
+)
 }
 \arguments{
 \item{object}{Output from \code{\link{lca}}.}
@@ -44,6 +50,9 @@ france.lca <- lca(fr.mort, adjust="e0")
 france.fcast <- forecast(france.lca, 50)
 plot(france.fcast)
 plot(france.fcast,'c')
+}
+\seealso{
+\code{\link{lca}}, \code{\link{plot.fmforecast}}
 }
 \author{
 Rob J Hyndman

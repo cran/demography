@@ -5,16 +5,33 @@
 \alias{bms}
 \title{Model mortality or fertility data using Lee-Carter approach}
 \usage{
-lca(data, series = names(data$rate)[1], years = data$year,
-  ages = data$age, max.age = 100, adjust = c("dt", "dxt", "e0",
-  "none"), chooseperiod = FALSE, minperiod = 20,
-  breakmethod = c("bai", "bms"), scale = FALSE,
-  restype = c("logrates", "rates", "deaths"), interpolate = FALSE)
+lca(
+  data,
+  series = names(data$rate)[1],
+  years = data$year,
+  ages = data$age,
+  max.age = 100,
+  adjust = c("dt", "dxt", "e0", "none"),
+  chooseperiod = FALSE,
+  minperiod = 20,
+  breakmethod = c("bai", "bms"),
+  scale = FALSE,
+  restype = c("logrates", "rates", "deaths"),
+  interpolate = FALSE
+)
 
-bms(data, series = names(data$rate)[1], years = data$year,
-  ages = data$age, max.age = 100, minperiod = 20,
-  breakmethod = c("bms", "bai"), scale = FALSE,
-  restype = c("logrates", "rates", "deaths"), interpolate = FALSE)
+bms(
+  data,
+  series = names(data$rate)[1],
+  years = data$year,
+  ages = data$age,
+  max.age = 100,
+  minperiod = 20,
+  breakmethod = c("bms", "bai"),
+  scale = FALSE,
+  restype = c("logrates", "rates", "deaths"),
+  interpolate = FALSE
+)
 }
 \arguments{
 \item{data}{demogdata object of type \dQuote{mortality} or
@@ -106,7 +123,7 @@ Lee, R.D., and Carter, L.R. (1992) Modeling and forecasting US mortality. \emph{
   the American Statistical Association}, \bold{87}, 659-671.
 }
 \seealso{
-\code{\link{forecast.lca}}, \code{\link{fdm}}
+\code{\link{forecast.lca}}, \code{\link{plot.lca}}, \code{\link{summary.lca}}, \code{\link{fdm}}
 }
 \author{
 Heather Booth, Leonie Tickle, John Maindonald and Rob J Hyndman.

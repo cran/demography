@@ -4,8 +4,15 @@
 \alias{pop.sim}
 \title{Population simulation}
 \usage{
-pop.sim(mort, fert = NULL, mig = NULL, firstyearpop, N = 100,
-  mfratio = 1.05, bootstrap = FALSE)
+pop.sim(
+  mort,
+  fert = NULL,
+  mig = NULL,
+  firstyearpop,
+  N = 100,
+  mfratio = 1.05,
+  bootstrap = FALSE
+)
 }
 \arguments{
 \item{mort}{Forecasts of class \code{fmforecast2} for mortality.}

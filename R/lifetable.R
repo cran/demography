@@ -2,28 +2,28 @@
 # Produce lifetable from mortality rates
 
 #' Construct lifetables from mortality rates
-#' 
+#'
 #' Computes period and cohort lifetables from mortality rates for multiple years.
-#' 
-#' For period lifetables, all years and all ages specified are included in the tables. For cohort lifetables, 
-#' if \code{ages} takes a scalar value, then the cohorts are taken to be of that age in each year contained in \code{years}. 
+#'
+#' For period lifetables, all years and all ages specified are included in the tables. For cohort lifetables,
+#' if \code{ages} takes a scalar value, then the cohorts are taken to be of that age in each year contained in \code{years}.
 #' But if \code{ages} is a vector of values, then the cohorts are taken to be of those ages in the first year contained in \code{years}.
-#' 
-#' For example, if \code{ages=0} then lifetables of the birth cohorts for all years in \code{years} are computed. On the other hand, 
+#'
+#' For example, if \code{ages=0} then lifetables of the birth cohorts for all years in \code{years} are computed. On the other hand,
 #' if \code{ages=0:100} and \code{years=1950:2010}, then lifetables of each age cohort in 1950 are computed.
-#' 
+#'
 #' In all cases, \eqn{q_x = m_x/(1+[(1-a_x)m_x])}{qx = mx/(1 + ((1-ax) * mx))} as per Chiang (1984).
-#' 
+#'
 #' Warning: the code has only been tested for data based on single-year age groups.
-#' 
-#' @param data Demogdata object such as obtained from \code{\link{read.demogdata}}, 
+#'
+#' @param data Demogdata object such as obtained from \code{\link{read.demogdata}},
 #' \code{\link{forecast.fdm}} or \code{\link{forecast.lca}}.
-#' @param series Name of series to use.  Default is the first series in data\$rate.
+#' @param series Name of series to use.  Default is the first series in \code{data[["rate"]]}.
 #' @param years Vector indicating which years to include in the tables.
 #' @param ages Vector indicating which ages to include in table.
 #' @param max.age Age for last row. Ages beyond this are combined.
 #' @param type Type of lifetable: \code{period} or \code{cohort}.
-#' 
+#'
 #' @return Object of class \dQuote{lifetable} containing the following components:
 #' \item{label}{Name of region from which data are taken.}
 #' \item{series}{Name of series}
@@ -38,31 +38,31 @@
 #' \item{ex}{Remaining life expectancy at exact age x.}
 #' Note that the lifetables themselves are not returned, only their components. However, there is a print method that constructs (and returns)
 #' the lifetables from the above components.
-#' 
+#'
 #' @seealso \code{\link{life.expectancy}}
 #' @author Heather Booth, Leonie Tickle, Rob J Hyndman, John Maindonald and Timothy Miller
-#' @references 
+#' @references
 #' Chiang CL. (1984) \emph{The life table and its applications}. Robert E Krieger Publishing Company: Malabar.
-#' 
+#'
 #' Keyfitz, N, and Caswell, H. (2005) \emph{Applied mathematical demography}, Springer-Verlag: New York.
-#' 
+#'
 #' Preston, S.H., Heuveline, P., and Guillot, M. (2001) \emph{Demography: measuring and modeling population processes}. Blackwell
-#' 
-#' @examples 
+#'
+#' @examples
 #' france.lt <- lifetable(fr.mort)
 #' plot(france.lt)
 #' lt1990 <- print(lifetable(fr.mort,year=1990))
-#' 
+#'
 #' france.LC <- lca(fr.mort)
 #' france.fcast <- forecast(france.LC)
 #' france.lt.f <- lifetable(france.fcast)
 #' plot(france.lt.f)
-#' 
+#'
 #' # Birth cohort lifetables, 1900-1910
 #' france.clt <- lifetable(fr.mort,type="cohort",age=0, years=1900:1910)
-#' 
+#'
 #' # Partial cohort lifetables for 1950
-#' lifetable(fr.mort,type="cohort",years=1950)
+#' lifetable(fr.mort, years=1950)
 #' @keywords models
 #' @export
 lifetable <- function(data, series=names(data$rate)[1], years=data$year, ages=data$age,
@@ -329,22 +329,22 @@ lt <- function (mx, startage = 0, agegroup = 5, sex)
 
 
 #' Plot life expectancy from lifetable
-#' 
+#'
 #' plots life expectancy for each age and each year as functional time series.
-#' 
+#'
 #' @param x Output from \code{\link{lifetable}}.
 #' @param years Years to plot. Default: all available years.
 #' @param main Main title.
 #' @param xlab Label for x-axis.
 #' @param ylab Label for y-axis.
 #' @param ... Additional arguments passed to \code{\link[rainbow]{plot.fds}}.
-#' 
+#'
 #' @seealso \code{\link{life.expectancy}}, \code{\link{lifetable}}.
 #' @author Rob J Hyndman
-#' @examples 
+#' @examples
 #' france.lt <- lifetable(fr.mort)
 #' plot(france.lt)
-#' 
+#'
 #' france.LC <- lca(fr.mort)
 #' france.fcast <- forecast(france.LC)
 #' france.lt.f <- lifetable(france.fcast)
@@ -394,48 +394,40 @@ lines.lifetable <- function(x,years=x$year,...)
   lines(fts(x$age,x$ex[,idx],start=x$year[1],frequency=1),...)
 }
 
+#' @export
+as.data.frame.lifetable <- function(x, ...) {
+  ny <- ncol(x$ex)
+  if(x$type=="period") {
+    year <- x$year
+  } else {
+    year <- as.numeric(colnames(x$ex))
+  }
+  outlist <- vector(length=ny,mode="list")
+  for(i in seq(ny)) {
+    idx2 <- !is.na(x$mx[,i])
+    if(sum(idx2)>0) {
+      outlist[[i]] <- data.frame(year[i], as.numeric(rownames(x$ex)), x$mx[,i],x$qx[,i],x$lx[,i],x$dx[,i],x$Lx[,i],x$Tx[,i],x$ex[,i])[idx2,]
+      colnames(outlist[[i]]) <- c("year","x","mx","qx","lx","dx","Lx","Tx","ex")
+    }
+  }
+  out <- do.call("rbind", outlist)
+  rownames(out) <- NULL
+  return(out)
+}
 
 #' @export
 print.lifetable <- function(x,digits=4,...)
 {
-  ny <- ncol(x$ex)
-  outlist <- vector(length=ny,mode="list")
-  for(i in 1:ny)
-  {
-    idx2 <- !is.na(x$mx[,i])
-    if(sum(idx2)>0)
-    {
-      outlist[[i]] <- data.frame(x$mx[,i],x$qx[,i],x$lx[,i],x$dx[,i],x$Lx[,i],x$Tx[,i],x$ex[,i])[idx2,]
-      rownames(outlist[[i]]) <- rownames(x$ex)[idx2]
-      colnames(outlist[[i]]) <- c("mx","qx","lx","dx","Lx","Tx","ex")
-    }
-  }
-  if(x$type=="period")
-  {
-    names(outlist) = x$year
+  out <- as.data.frame(x)
+  if(x$type=="period") {
     cat("Period ")
-  }
-  else
-  {
-    names(outlist) <- colnames(x$ex)
+  } else {
     cat("Cohort ")
   }
   cat(paste("lifetable for",x$label,":",x$series,"\n\n"))
-  for(i in 1:ny)
-  {
-    if(!is.null(outlist[[i]]))
-    {
-      if(x$type=="period")
-        cat(paste("Year:",names(outlist)[i],"\n"))
-      else
-        cat(paste("Cohort:",names(outlist)[i],"\n"))
-      print(round(outlist[[i]],digits=digits))
-      cat("\n")
-    }
-  }
-  invisible(outlist)
+  print(round(out, digits = digits))
+  invisible(out)
 }
-
 
 # Compute expected age from single year mortality rates
 get.e0 <- function(x,agegroup,sex,startage=0)
@@ -445,17 +437,17 @@ get.e0 <- function(x,agegroup,sex,startage=0)
 
 # Compute expected ages for multiple years
 #' Estimate life expectancy from mortality rates
-#' 
-#' All three functions estimate life expectancy from \code{lifetable}. 
-#' The function \code{flife.expectancy} is primarily designed for forecast life expectancies and will optionally 
+#'
+#' All three functions estimate life expectancy from \code{lifetable}.
+#' The function \code{flife.expectancy} is primarily designed for forecast life expectancies and will optionally
 #' produce prediction intervals. Where appropriate, it will package the results as a forecast object
 #' which makes it much easier to product nice plots of forecast life expectancies.
 #' The \code{e0} function is a shorthand wrapper for \code{flife.expectancy} with \code{age=0}.
-#' 
+#'
 #' @return Time series of life expectancies (one per year), or a forecast object of life expectancies (one per year).
-#'   
-#' @param data Demogdata object of type \dQuote{mortality} such as obtained from \code{\link{read.demogdata}}, 
-#' or an object of class \code{fmforecast} such as the output from  \code{\link{forecast.fdm}} or \code{\link{forecast.lca}}, 
+#'
+#' @param data Demogdata object of type \dQuote{mortality} such as obtained from \code{\link{read.demogdata}},
+#' or an object of class \code{fmforecast} such as the output from  \code{\link{forecast.fdm}} or \code{\link{forecast.lca}},
 #' or an object of class \code{fmforecast2} such as the output from \code{\link{forecast.fdmpr}}.
 #' @param series Name of mortality series to use. Default is the first demogdata series in data.
 #' @param years Vector indicating which years to use.
@@ -465,24 +457,24 @@ get.e0 <- function(x,agegroup,sex,startage=0)
 #' @param PI If TRUE, produce a prediction interval.
 #' @param nsim Number of simulations to use when computing a prediction interval.
 #' @param ... Other arguments passed to \code{simulate} when producing prediction intervals.
-#' 
+#'
 #' @seealso \code{\link{lifetable}}
 #' @author Rob J Hyndman
-#' @examples 
+#' @examples
 #' plot(life.expectancy(fr.mort),ylab="Life expectancy")
-#' 
+#'
 #' france.LC <- lca(fr.mort,adjust="e0",years=1950:1997)
 #' france.fcast <- forecast(france.LC,jumpchoice="actual")
 #' france.e0.f <- life.expectancy(france.fcast)
-#' 
+#'
 #' france.fdm <- fdm(extract.years(fr.mort,years=1950:2006))
 #' france.fcast <- forecast(france.fdm)
 #' \dontrun{
 #'   e0.fcast <- e0(france.fcast,PI=TRUE,nsim=200)
 #'   plot(e0.fcast)}
-#' 
+#'
 #' life.expectancy(fr.mort,type='cohort',age=50)
-#' 
+#'
 #' @keywords models
 #' @export
 life.expectancy <- function(data,series=names(data$rate)[1],years=data$year,
@@ -689,9 +681,9 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
             simdata$rate <- list(as.matrix(sim[,useyears,i]))
             names(simdata$rate) <- names(total$rate)[1]
             fl <- flife.expectancy(simdata,type=type,age=age,max.age=max.age)
-            if(class(fl)=="ts")
+            if(inherits(fl, "ts"))
               e0sim[,i] <- fl
-            else if(class(fl)=="forecast")
+            else if(inherits(fl, "forecast"))
               e0sim[,i] <- fl$mean
             else
               stop("No idea what's going on here.")
@@ -728,9 +720,9 @@ flife.expectancy <- function(data, series=NULL, years=data$year,
             simdata$rate <- list(as.matrix(sim[,useyears,i]))
             names(simdata$rate) <- names(data[[series]]$rate)[1]
             fl <- flife.expectancy(simdata,type=type,age=age,max.age=max.age)
-            if(class(fl)=="ts")
+            if(inherits(fl, "ts"))
               e0sim[,i] <- fl
-            else if(class(fl)=="forecast")
+            else if(inherits(fl, "forecast"))
               e0sim[,i] <- fl$mean
             else
               stop("No idea what's going on here.")

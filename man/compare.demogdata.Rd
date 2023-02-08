@@ -4,9 +4,15 @@
 \alias{compare.demogdata}
 \title{Evaluation of demographic forecast accuracy}
 \usage{
-compare.demogdata(data, forecast, series = names(forecast$rate)[1],
-  ages = data$age, max.age = min(max(data$age), max(forecast$age)),
-  years = data$year, interpolate = FALSE)
+compare.demogdata(
+  data,
+  forecast,
+  series = names(forecast$rate)[1],
+  ages = data$age,
+  max.age = min(max(data$age), max(forecast$age)),
+  years = data$year,
+  interpolate = FALSE
+)
 }
 \arguments{
 \item{data}{Demogdata object such as created using

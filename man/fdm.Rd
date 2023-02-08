@@ -4,9 +4,19 @@
 \alias{fdm}
 \title{Functional demographic model}
 \usage{
-fdm(data, series = names(data$rate)[1], order = 6, ages = data$age,
-  max.age = max(ages), method = c("classical", "M", "rapca"),
-  lambda = 3, mean = TRUE, level = FALSE, transform = TRUE, ...)
+fdm(
+  data,
+  series = names(data$rate)[1],
+  order = 6,
+  ages = data$age,
+  max.age = max(ages),
+  method = c("classical", "M", "rapca"),
+  lambda = 3,
+  mean = TRUE,
+  level = FALSE,
+  transform = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{demogdata object. Output from read.demogdata.}
@@ -70,7 +80,7 @@ plot(residuals(france.fit))
 Hyndman, R.J., and Ullah, S. (2007) Robust forecasting of
 mortality and fertility rates: a functional data approach.
 \emph{Computational Statistics & Data Analysis}, \bold{51}, 4942-4956.
-\url{http://robjhyndman.com/papers/funcfor}
+\url{https://robjhyndman.com/publications/funcfor/}
 }
 \seealso{
 \code{\link[ftsa]{ftsm}}, \code{\link{forecast.fdm}}
